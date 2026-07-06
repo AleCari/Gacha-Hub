@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gacha Hub — Banners y Builds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Dots&family=Manrope:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+  :root{
+    --bg:#140f1f; --card:#211a34; --edge:#342a52; --ink:#f2ecdf; --dim:#b3a9c9;
+    --gold:#f2c14e; --purple:#b98cea; --blue:#6fa9e6; --pink:#f28fc0;
+    --overlay-bg: rgba(10,7,18,.55);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; color:var(--ink); font-family:'Manrope', sans-serif;
+    background-color:var(--bg);
+    background-image:var(--custom-bg, none);
+    background-size:cover; background-position:center; background-attachment:fixed;
+    position:relative;
+  }
+  body::before{
+    content:''; position:fixed; inset:0; background:var(--overlay-bg); z-index:0; pointer-events:none;
+  }
+  #app{ position:relative; z-index:1; }
+
+  .admin-pill{
+    position:fixed; top:14px; right:14px; z-index:100;
+    background:var(--gold); color:#1a1305; font-family:'JetBrains Mono', monospace;
+    font-size:.7rem; font-weight:700; padding:8px 14px; border-radius:20px;
+    display:flex; align-items:center; gap:8px; box-shadow:0 6px 18px -6px rgba(0,0,0,.5);
+  }
+  .admin-pill button{
+    background:none; border:none; color:#1a1305; font-weight:700; cursor:pointer; text-decoration:underline;
+    font-family:'JetBrains Mono', monospace; font-size:.7rem;
+  }
+
+  header{ padding:60px 6vw 26px; }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:.7rem; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--gold); display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{ content:''; width:22px; height:1px; background:var(--gold); }
+  h1{ font-family:'Zen Dots'; font-weight:400; font-size:clamp(2rem,5vw,3.4rem); margin:14px 0 8px; }
+  h1 span{ color:var(--gold); }
+  .sub{ color:var(--dim); max-width:600px; line-height:1.6; }
+
+  .config-btn{
+    margin-top:18px; font-family:'JetBrains Mono', monospace; font-size:.72rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:.05em; background:transparent; border:1px solid var(--edge);
+    color:var(--dim); padding:9px 16px; border-radius:8px; cursor:pointer;
+  }
+  .config-btn:hover{ border-color:var(--gold); color:var(--ink); }
+
+  nav.tabs{
+    display:flex; gap:8px; padding:0 6vw; margin-bottom:8px; flex-wrap:wrap;
+  }
+  .tab{
+    font-family:'JetBrains Mono', monospace; font-size:.78rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.04em; padding:11px 18px; border-radius:9px 9px 0 0; cursor:pointer;
+    background:transparent; border:none; color:var(--dim);
+  }
+  .tab.active{ background:var(--card); color:var(--gold); }
+
+  main{ padding:20px 6vw 30px; }
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+
+  .toolbar{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:22px; }
+  .btn{
+    font-family:'JetBrains Mono', monospace; font-weight:700; font-size:.76rem; letter-spacing:.05em;
+    text-transform:uppercase; border:none; border-radius:9px; padding:11px 18px; cursor:pointer;
+  }
+  .btn-primary{ background:linear-gradient(135deg, var(--gold), #d9973a); color:#1a1305; }
+  .btn-ghost{ background:transparent; color:var(--dim); border:1px solid var(--edge); }
+  .btn-ghost:hover{ color:var(--ink); border-color:var(--gold); }
+
+  .game-filters{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+  .chip{
+    font-family:'JetBrains Mono', monospace; font-size:.7rem; padding:7px 13px; border-radius:20px;
+    border:1px solid var(--edge); color:var(--dim); cursor:pointer; background:transparent;
+  }
+  .chip.active{ border-color:var(--chip-color, var(--gold)); color:var(--chip-color, var(--gold)); }
+
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:18px; }
+
+  .card{
+    background:var(--card); border:1px solid var(--edge); border-radius:16px; overflow:hidden; position:relative;
+  }
+  .card-img{
+    width:100%; height:150px; background-size:cover; background-position:center;
+    background-color:var(--bg-alt, #1c1530); display:flex; align-items:center; justify-content:center;
+    color:var(--dim); font-family:'JetBrains Mono', monospace; font-size:.7rem;
+  }
+  .card-body{ padding:18px; }
+  .badge{
+    display:inline-block; font-family:'JetBrains Mono', monospace; font-size:.66rem; letter-spacing:.08em;
+    text-transform:uppercase; padding:3px 10px; border-radius:20px; border:1px solid var(--game-color, var(--gold));
+    color:var(--game-color, var(--gold)); margin-bottom:10px;
+  }
+  .card h3{ font-family:'Zen Dots'; font-weight:400; font-size:1.05rem; margin:0 0 8px; }
+  .card .notes{ font-size:.85rem; color:var(--dim); line-height:1.5; margin:0 0 12px; }
+  .countdown{
+    font-family:'JetBrains Mono', monospace; font-size:.78rem; color:var(--ink);
+    background:rgba(255,255,255,.04); border-radius:8px; padding:8px 10px; margin-bottom:10px;
+  }
+  .countdown b{ color:var(--game-color, var(--gold)); }
+  .card-actions{ display:flex; gap:8px; }
+  .icon-btn{
+    background:transparent; border:1px solid var(--edge); color:var(--dim); border-radius:7px;
+    padding:6px 10px; cursor:pointer; font-size:.85rem;
+  }
+  .icon-btn:hover{ color:var(--ink); border-color:var(--gold); }
+
+  .empty{ grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--dim); border:1px dashed var(--edge); border-radius:16px; }
+
+  dialog{ border:none; border-radius:16px; padding:0; background:var(--card); color:var(--ink); width:min(520px,92vw); max-height:88vh; }
+  dialog::backdrop{ background:rgba(10,7,18,.75); }
+  .dialog-inner{ padding:26px; overflow-y:auto; max-height:88vh; }
+  .dialog-inner h2{ font-family:'Zen Dots'; font-weight:400; font-size:1.15rem; margin:0 0 18px; }
+  .field{ margin-bottom:14px; }
+  .field label{ font-family:'JetBrains Mono', monospace; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); display:block; margin-bottom:6px; }
+  .field input, .field select, .field textarea{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--edge);
+    background:#1c1530; color:var(--ink); font-family:'Manrope', sans-serif; font-size:.88rem;
+  }
+  .field textarea{ resize:vertical; min-height:60px; }
+  .field input:focus, .field select:focus, .field textarea:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .preview{ width:100%; height:100px; border-radius:8px; background-size:cover; background-position:center; border:1px solid var(--edge); margin-top:8px; display:flex; align-items:center; justify-content:center; color:var(--dim); font-size:.7rem; font-family:'JetBrains Mono', monospace; }
+  .dialog-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
+
+  .piece-row{ border:1px solid var(--edge); border-radius:10px; padding:12px; margin-bottom:10px; position:relative; }
+  .piece-row .remove-piece{ position:absolute; top:8px; right:8px; background:none; border:none; color:var(--dim); cursor:pointer; }
+  .bg-options{ display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .bg-opt{
+    font-family:'JetBrains Mono', monospace; font-size:.7rem; padding:8px 12px; border-radius:8px;
+    border:1px solid var(--edge); color:var(--dim); cursor:pointer; background:transparent;
+  }
+  .bg-opt.active{ border-color:var(--gold); color:var(--gold); }
+  .preset-swatch{ width:100%; height:44px; border-radius:8px; cursor:pointer; border:2px solid transparent; }
+  .preset-swatch.active{ border-color:var(--gold); }
+  .preset-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+
+  footer{ padding:30px 6vw 60px; color:var(--dim); font-size:.72rem; font-family:'JetBrains Mono', monospace; border-top:1px solid var(--edge); }
+  .loading{ text-align:center; padding:80px 20px; color:var(--dim); font-family:'JetBrains Mono', monospace; }
+
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="admin-pill" id="adminPill" style="display:none;">
+    ⚙ MODO ADMIN <button id="exitAdmin">salir</button>
+  </div>
+
+  <header>
+    <div class="eyebrow">gacha hub</div>
+    <h1 id="siteTitle">Gacha <span>Hub</span></h1>
+    <p class="sub" id="siteSubtitle">Banners activos, próximos lanzamientos y builds de personajes.</p>
+    <button class="config-btn" id="openConfigBtn" style="display:none;">Personalizar página</button>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-panel="active">Banners activos</button>
+    <button class="tab" data-panel="upcoming">Próximos banners</button>
+    <button class="tab" data-panel="builds">Builds</button>
+  </nav>
+
+  <main>
+    <section class="panel active" id="panel-active">
+      <div class="toolbar">
+        <button class="btn btn-primary admin-only" style="display:none;" data-open="banner">+ Nuevo banner</button>
+      </div>
+      <div class="game-filters" id="filtersActive"></div>
+      <div class="grid" id="gridActive"><div class="loading">Cargando banners...</div></div>
+    </section>
+
+    <section class="panel" id="panel-upcoming">
+      <div class="toolbar">
+        <button class="btn btn-primary admin-only" style="display:none;" data-open="banner">+ Nuevo banner</button>
+      </div>
+      <div class="game-filters" id="filtersUpcoming"></div>
+      <div class="grid" id="gridUpcoming"><div class="loading">Cargando...</div></div>
+    </section>
+
+    <section class="panel" id="panel-builds">
+      <div class="toolbar">
+        <button class="btn btn-primary admin-only" style="display:none;" data-open="build">+ Nueva build</button>
+      </div>
+      <div class="game-filters" id="filtersBuilds"></div>
+      <div class="grid" id="gridBuilds"><div class="loading">Cargando builds...</div></div>
+    </section>
+  </main>
+
+  <footer>gacha hub — página de fans, sin afiliación con los estudios de los juegos mencionados</footer>
+</div>
+
+<!-- Banner dialog -->
+<dialog id="bannerDialog">
+  <div class="dialog-inner">
+    <h2 id="bannerDialogTitle">Nuevo banner</h2>
+    <div class="field">
+      <label>Juego</label>
+      <select id="bGame">
+        <option value="genshin">Genshin Impact</option>
+        <option value="hsr">Honkai: Star Rail</option>
+        <option value="zzz">Zenless Zone Zero</option>
+        <option value="uma">Umamusume</option>
+      </select>
+    </div>
+    <div class="field"><label>Nombre del banner</label><input id="bName" placeholder="ej. Banner de temporada"></div>
+    <div class="field">
+      <label>Imagen del banner</label>
+      <input type="file" id="bImageFile" accept="image/*">
+      <div class="preview" id="bImagePreview">sin imagen</div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Empieza</label><input type="datetime-local" id="bStart"></div>
+      <div class="field"><label>Termina</label><input type="datetime-local" id="bEnd"></div>
+    </div>
+    <div class="field"><label>Notas / rate-up</label><textarea id="bNotes" placeholder="Personajes destacados, detalles..."></textarea></div>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" id="bannerCancel">Cancelar</button>
+      <button class="btn btn-primary" id="bannerSave">Guardar</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Build dialog -->
+<dialog id="buildDialog">
+  <div class="dialog-inner">
+    <h2 id="buildDialogTitle">Nueva build</h2>
+    <div class="field">
+      <label>Juego</label>
+      <select id="uGame">
+        <option value="genshin">Genshin Impact</option>
+        <option value="hsr">Honkai: Star Rail</option>
+        <option value="zzz">Zenless Zone Zero</option>
+        <option value="uma">Umamusume</option>
+      </select>
+    </div>
+    <div class="field"><label>Nombre del personaje</label><input id="uName" placeholder="ej. Furina, Acheron, Ellen..."></div>
+    <div class="field">
+      <label>Retrato</label>
+      <input type="file" id="uPortraitFile" accept="image/*">
+      <div class="preview" id="uPortraitPreview">sin imagen</div>
+    </div>
+    <div class="field"><label>Arma / equipo principal (nombre)</label><input id="uWeaponName" placeholder="ej. nombre del arma o soporte"></div>
+    <div class="field">
+      <label>Imagen del arma</label>
+      <input type="file" id="uWeaponFile" accept="image/*">
+      <div class="preview" id="uWeaponPreview">sin imagen</div>
+    </div>
+    <div class="field"><label>Notas del arma</label><textarea id="uWeaponNotes" placeholder="refinamiento, superposición, etc."></textarea></div>
+
+    <div class="field">
+      <label>Artefactos / discos / soportes</label>
+      <div id="piecesContainer"></div>
+      <button type="button" class="btn btn-ghost" id="addPieceBtn">+ agregar pieza</button>
+    </div>
+
+    <div class="field"><label>Notas generales de la build</label><textarea id="uNotes" placeholder="stats objetivo, prioridad de sub-stats, equipo recomendado..."></textarea></div>
+
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" id="buildCancel">Cancelar</button>
+      <button class="btn btn-primary" id="buildSave">Guardar</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Config dialog -->
+<dialog id="configDialog">
+  <div class="dialog-inner">
+    <h2>Personalizar página</h2>
+    <div class="field"><label>Título del sitio</label><input id="cTitle"></div>
+    <div class="field"><label>Subtítulo</label><input id="cSubtitle"></div>
+    <div class="field">
+      <label>Tipo de fondo</label>
+      <div class="bg-options">
+        <button type="button" class="bg-opt" data-bgtype="preset">Gradiente</button>
+        <button type="button" class="bg-opt" data-bgtype="solid">Color sólido</button>
+        <button type="button" class="bg-opt" data-bgtype="image">Imagen propia</button>
+      </div>
+    </div>
+    <div id="presetBlock" class="field">
+      <div class="preset-grid" id="presetGrid"></div>
+    </div>
+    <div id="solidBlock" class="field" style="display:none;">
+      <label>Color</label>
+      <input type="color" id="cSolidColor" value="#140f1f">
+    </div>
+    <div id="imageBlock" class="field" style="display:none;">
+      <label>Imagen de fondo</label>
+      <input type="file" id="cBgFile" accept="image/*">
+      <div class="preview" id="cBgPreview">sin imagen</div>
+    </div>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" id="configCancel">Cancelar</button>
+      <button class="btn btn-primary" id="configSave">Guardar</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+// ====== FIREBASE SETUP ======
+const firebaseConfig = {
+  apiKey: "AIzaSyAKnPEk6UlVMV9rm99SnyPv8MAVa_gSii4",
+  authDomain: "zerogamegacha.firebaseapp.com",
+  projectId: "zerogamegacha",
+  storageBucket: "zerogamegacha.firebasestorage.app",
+  messagingSenderId: "4151101550",
+  appId: "1:4151101550:web:13062ac9ef763861643e7f"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ====== ADMIN GATE ======
+// CAMBIA ESTA CLAVE antes de compartir el link publico. Compartí SOLO la URL base
+// (sin ?admin=...) con el resto. Guardate vos el link con ?admin=TUCLAVE.
+const ADMIN_SECRET = "Xerelol1998";
+const params = new URLSearchParams(window.location.search);
+const isAdmin = params.get('admin') === ADMIN_SECRET;
+
+if(isAdmin){
+  document.getElementById('adminPill').style.display = 'flex';
+  document.getElementById('openConfigBtn').style.display = 'inline-block';
+  document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-block');
+}
+document.getElementById('exitAdmin').addEventListener('click', () => {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('admin');
+  window.location.href = url.toString();
+});
+
+// ====== GAME CONFIG ======
+const GAMES = {
+  genshin: { label: 'Genshin Impact', color: 'var(--gold)' },
+  hsr: { label: 'Honkai: Star Rail', color: 'var(--purple)' },
+  zzz: { label: 'Zenless Zone Zero', color: 'var(--blue)' },
+  uma: { label: 'Umamusume', color: 'var(--pink)' }
+};
+
+const BG_PRESETS = [
+  { id:'aubergine', label:'Aubergine', css:'radial-gradient(ellipse at 15% -10%, #2c2050 0%, transparent 55%), radial-gradient(ellipse at 90% 0%, #1a2a45 0%, transparent 45%), #140f1f' },
+  { id:'crimson', label:'Carmesí', css:'radial-gradient(ellipse at 20% 0%, #4a1530 0%, transparent 55%), #150a10' },
+  { id:'forest', label:'Bosque', css:'radial-gradient(ellipse at 80% 10%, #123324 0%, transparent 55%), #0d1712' },
+  { id:'ocean', label:'Océano', css:'radial-gradient(ellipse at 10% 10%, #0f2f4a 0%, transparent 55%), #0a1622' },
+  { id:'sakura', label:'Sakura', css:'radial-gradient(ellipse at 70% 0%, #4a1f3a 0%, transparent 55%), #170a14' },
+  { id:'noir', label:'Noir puro', css:'#0c0a12' }
+];
+
+// ====== IMAGE COMPRESSION ======
+function compressImage(file, maxDim, quality){
+  maxDim = maxDim || 800; quality = quality || 0.72;
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if(w > h){ if(w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; } }
+        else { if(h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function wireImageInput(inputId, previewId, maxDim){
+  const input = document.getElementById(inputId);
+  const preview = document.getElementById(previewId);
+  let dataUrl = '';
+  input.addEventListener('change', async () => {
+    const file = input.files[0];
+    if(!file) return;
+    preview.textContent = 'procesando...';
+    try{
+      dataUrl = await compressImage(file, maxDim || 800, 0.72);
+      preview.style.backgroundImage = `url(${dataUrl})`;
+      preview.textContent = '';
+    }catch(err){
+      preview.textContent = 'error al procesar imagen';
+    }
+  });
+  return {
+    get: () => dataUrl,
+    set: (url) => { dataUrl = url || ''; preview.style.backgroundImage = url ? `url(${url})` : 'none'; preview.textContent = url ? '' : 'sin imagen'; },
+    reset: () => { dataUrl=''; input.value=''; preview.style.backgroundImage='none'; preview.textContent='sin imagen'; }
+  };
+}
+
+// ====== TABS ======
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+  });
+});
+
+// ====== COUNTDOWN ======
+function formatCountdown(ms){
+  if(ms <= 0) return null;
+  const s = Math.floor(ms/1000);
+  const d = Math.floor(s/86400);
+  const h = Math.floor((s%86400)/3600);
+  const m = Math.floor((s%3600)/60);
+  const sec = s%60;
+  if(d > 0) return `${d}d ${h}h ${m}m`;
+  if(h > 0) return `${h}h ${m}m ${sec}s`;
+  return `${m}m ${sec}s`;
+}
+setInterval(() => {
+  document.querySelectorAll('[data-target]').forEach(el => {
+    const target = Number(el.dataset.target);
+    const diff = target - Date.now();
+    const prefix = el.dataset.prefix || '';
+    if(diff <= 0){ el.innerHTML = `${prefix}<b>ya disponible / finalizado</b>`; return; }
+    el.innerHTML = `${prefix}<b>${formatCountdown(diff)}</b>`;
+  });
+}, 1000);
+
+// ====== STATE ======
+let bannersData = [];
+let buildsData = [];
+let activeGameFilter = { active: null, upcoming: null, builds: null };
+
+// ====== RENDER BANNERS ======
+function renderBanners(){
+  const now = Date.now();
+  const activeList = bannersData.filter(b => b.end >= now && b.start <= now).sort((a,b)=>a.end-b.end);
+  const upcomingList = bannersData.filter(b => b.start > now).sort((a,b)=>a.start-b.start);
+
+  renderBannerGrid('gridActive', 'filtersActive', activeList, 'active');
+  renderBannerGrid('gridUpcoming', 'filtersUpcoming', upcomingList, 'upcoming');
+}
+
+function renderGameFilters(containerId, list, key){
+  const el = document.getElementById(containerId);
+  const gamesPresent = [...new Set(list.map(x => x.game))];
+  el.innerHTML = '';
+  if(gamesPresent.length === 0) return;
+  const allChip = document.createElement('button');
+  allChip.className = 'chip' + (activeGameFilter[key]===null ? ' active':'');
+  allChip.textContent = 'Todos';
+  allChip.addEventListener('click', () => { activeGameFilter[key]=null; renderBanners(); renderBuilds(); });
+  el.appendChild(allChip);
+  gamesPresent.forEach(g => {
+    const chip = document.createElement('button');
+    chip.className = 'chip' + (activeGameFilter[key]===g ? ' active':'');
+    chip.style.setProperty('--chip-color', GAMES[g] ? GAMES[g].color : 'var(--gold)');
+    chip.textContent = GAMES[g] ? GAMES[g].label : g;
+    chip.addEventListener('click', () => { activeGameFilter[key]=g; renderBanners(); renderBuilds(); });
+    el.appendChild(chip);
+  });
+}
+
+function renderBannerGrid(gridId, filterId, list, mode){
+  renderGameFilters(filterId, list, mode);
+  const filtered = activeGameFilter[mode] ? list.filter(b=>b.game===activeGameFilter[mode]) : list;
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+  if(filtered.length === 0){
+    grid.innerHTML = `<div class="empty">No hay banners ${mode==='active'?'activos':'próximos'} todavía.</div>`;
+    return;
+  }
+  filtered.forEach(b => {
+    const game = GAMES[b.game] || { label:b.game, color:'var(--gold)' };
+    const card = document.createElement('article');
+    card.className = 'card';
+    const targetTime = mode==='active' ? b.end : b.start;
+    const prefixText = mode==='active' ? 'Termina en ' : 'Empieza en ';
+    card.innerHTML = `
+      <div class="card-img" style="${b.image ? `background-image:url(${b.image})` : ''}">${b.image?'':'sin imagen'}</div>
+      <div class="card-body">
+        <span class="badge" style="--game-color:${game.color}">${game.label}</span>
+        <h3>${escapeHtml(b.name)}</h3>
+        <div class="countdown" style="--game-color:${game.color}" data-target="${targetTime}" data-prefix="${prefixText}">${prefixText}<b>calculando...</b></div>
+        ${b.notes ? `<p class="notes">${escapeHtml(b.notes)}</p>` : ''}
+        <div class="card-actions admin-only" style="display:${isAdmin?'flex':'none'}">
+          <button class="icon-btn" data-edit-banner="${b.id}">✎ Editar</button>
+          <button class="icon-btn" data-del-banner="${b.id}">✕ Eliminar</button>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ====== RENDER BUILDS ======
+function renderBuilds(){
+  renderGameFilters('filtersBuilds', buildsData, 'builds');
+  const filtered = activeGameFilter.builds ? buildsData.filter(u=>u.game===activeGameFilter.builds) : buildsData;
+  const grid = document.getElementById('gridBuilds');
+  grid.innerHTML = '';
+  if(filtered.length === 0){
+    grid.innerHTML = '<div class="empty">Todavía no hay builds cargadas.</div>';
+    return;
+  }
+  filtered.forEach(u => {
+    const game = GAMES[u.game] || { label:u.game, color:'var(--gold)' };
+    const piecesHtml = (u.pieces||[]).map(p => `
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+        ${p.image ? `<div style="width:36px;height:36px;border-radius:6px;background-size:cover;background-position:center;background-image:url(${p.image});flex-shrink:0;"></div>` : ''}
+        <div style="font-size:.78rem; color:var(--dim);"><b style="color:var(--ink)">${escapeHtml(p.name||'')}</b>${p.notes ? ' — '+escapeHtml(p.notes) : ''}</div>
+      </div>
+    `).join('');
+
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-img" style="${u.portrait ? `background-image:url(${u.portrait})` : ''}">${u.portrait?'':'sin retrato'}</div>
+      <div class="card-body">
+        <span class="badge" style="--game-color:${game.color}">${game.label}</span>
+        <h3>${escapeHtml(u.name)}</h3>
+        ${u.weaponName ? `<div style="font-size:.82rem; margin-bottom:8px;"><b>Arma:</b> ${escapeHtml(u.weaponName)}${u.weaponNotes ? ' — '+escapeHtml(u.weaponNotes):''}</div>` : ''}
+        ${piecesHtml}
+        ${u.notes ? `<p class="notes">${escapeHtml(u.notes)}</p>` : ''}
+        <div class="card-actions admin-only" style="display:${isAdmin?'flex':'none'}">
+          <button class="icon-btn" data-edit-build="${u.id}">✎ Editar</button>
+          <button class="icon-btn" data-del-build="${u.id}">✕ Eliminar</button>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ====== FIRESTORE LISTENERS ======
+db.collection('banners').onSnapshot(snap => {
+  bannersData = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+  renderBanners();
+}, err => console.error(err));
+
+db.collection('builds').onSnapshot(snap => {
+  buildsData = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+  renderBuilds();
+}, err => console.error(err));
+
+db.collection('config').doc('site').onSnapshot(doc => {
+  const data = doc.exists ? doc.data() : {};
+  document.getElementById('siteTitle').innerHTML = data.title ? escapeHtml(data.title) : 'Gacha <span>Hub</span>';
+  document.getElementById('siteSubtitle').textContent = data.subtitle || 'Banners activos, próximos lanzamientos y builds de personajes.';
+  applyBackground(data);
+});
+
+function applyBackground(data){
+  const body = document.body;
+  if(!data || !data.bgType || data.bgType === 'preset'){
+    const preset = BG_PRESETS.find(p => p.id === (data && data.bgPreset)) || BG_PRESETS[0];
+    body.style.setProperty('--custom-bg', preset.css);
+  } else if(data.bgType === 'solid'){
+    body.style.setProperty('--custom-bg', data.bgColor || '#140f1f');
+  } else if(data.bgType === 'image' && data.bgImage){
+    body.style.setProperty('--custom-bg', `url(${data.bgImage})`);
+  }
+}
+
+// ====== BANNER DIALOG ======
+const bannerDialog = document.getElementById('bannerDialog');
+const bImg = wireImageInput('bImageFile', 'bImagePreview', 900);
+let editingBannerId = null;
+
+document.querySelectorAll('[data-open="banner"]').forEach(btn => btn.addEventListener('click', () => {
+  editingBannerId = null;
+  document.getElementById('bannerDialogTitle').textContent = 'Nuevo banner';
+  document.getElementById('bGame').value = 'genshin';
+  document.getElementById('bName').value = '';
+  document.getElementById('bStart').value = '';
+  document.getElementById('bEnd').value = '';
+  document.getElementById('bNotes').value = '';
+  bImg.reset();
+  bannerDialog.showModal();
+}));
+document.getElementById('bannerCancel').addEventListener('click', () => bannerDialog.close());
+
+document.getElementById('bannerSave').addEventListener('click', async () => {
+  const start = document.getElementById('bStart').value;
+  const end = document.getElementById('bEnd').value;
+  if(!start || !end){ alert('Completá fecha de inicio y de fin.'); return; }
+  const payload = {
+    game: document.getElementById('bGame').value,
+    name: document.getElementById('bName').value.trim() || 'Banner sin nombre',
+    image: bImg.get(),
+    start: new Date(start).getTime(),
+    end: new Date(end).getTime(),
+    notes: document.getElementById('bNotes').value.trim()
+  };
+  try{
+    if(editingBannerId){
+      await db.collection('banners').doc(editingBannerId).update(payload);
+    } else {
+      await db.collection('banners').add(payload);
+    }
+    bannerDialog.close();
+  }catch(err){ alert('Error al guardar: ' + err.message); }
+});
+
+document.addEventListener('click', (e) => {
+  if(e.target.dataset.editBanner){
+    const b = bannersData.find(x => x.id === e.target.dataset.editBanner);
+    if(!b) return;
+    editingBannerId = b.id;
+    document.getElementById('bannerDialogTitle').textContent = 'Editar banner';
+    document.getElementById('bGame').value = b.game;
+    document.getElementById('bName').value = b.name;
+    document.getElementById('bStart').value = toLocalInput(b.start);
+    document.getElementById('bEnd').value = toLocalInput(b.end);
+    document.getElementById('bNotes').value = b.notes || '';
+    bImg.set(b.image);
+    bannerDialog.showModal();
+  }
+  if(e.target.dataset.delBanner){
+    if(confirm('¿Eliminar este banner?')){
+      db.collection('banners').doc(e.target.dataset.delBanner).delete();
+    }
+  }
+});
+
+function toLocalInput(ts){
+  const d = new Date(ts);
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// ====== BUILD DIALOG ======
+const buildDialog = document.getElementById('buildDialog');
+const uPortrait = wireImageInput('uPortraitFile', 'uPortraitPreview', 700);
+const uWeapon = wireImageInput('uWeaponFile', 'uWeaponPreview', 500);
+let editingBuildId = null;
+let pieceHandlers = [];
+
+function addPieceRow(existing){
+  const container = document.getElementById('piecesContainer');
+  const idx = pieceHandlers.length;
+  const row = document.createElement('div');
+  row.className = 'piece-row';
+  row.innerHTML = `
+    <button type="button" class="remove-piece" data-idx="${idx}">✕</button>
+    <div class="field"><label>Nombre de la pieza</label><input class="piece-name" placeholder="ej. Disco 4, Artefacto de arenas..."></div>
+    <div class="field"><label>Imagen</label><input type="file" class="piece-file" accept="image/*"><div class="preview piece-preview">sin imagen</div></div>
+    <div class="field"><label>Notas</label><input class="piece-notes" placeholder="stat principal, sets..."></div>
+  `;
+  container.appendChild(row);
+  const fileInput = row.querySelector('.piece-file');
+  const preview = row.querySelector('.piece-preview');
+  let pieceData = existing ? existing.image || '' : '';
+  if(pieceData){ preview.style.backgroundImage = `url(${pieceData})`; preview.textContent=''; }
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if(!file) return;
+    preview.textContent = 'procesando...';
+    pieceData = await compressImage(file, 500, 0.7);
+    preview.style.backgroundImage = `url(${pieceData})`;
+    preview.textContent = '';
+  });
+  if(existing){
+    row.querySelector('.piece-name').value = existing.name || '';
+    row.querySelector('.piece-notes').value = existing.notes || '';
+  }
+  row.querySelector('.remove-piece').addEventListener('click', () => {
+    row.remove();
+    pieceHandlers[idx] = null;
+  });
+  pieceHandlers[idx] = {
+    getName: () => row.querySelector('.piece-name').value.trim(),
+    getNotes: () => row.querySelector('.piece-notes').value.trim(),
+    getImage: () => pieceData
+  };
+}
+
+document.getElementById('addPieceBtn').addEventListener('click', () => addPieceRow());
+
+document.querySelectorAll('[data-open="build"]').forEach(btn => btn.addEventListener('click', () => {
+  editingBuildId = null;
+  document.getElementById('buildDialogTitle').textContent = 'Nueva build';
+  document.getElementById('uGame').value = 'genshin';
+  document.getElementById('uName').value = '';
+  document.getElementById('uWeaponName').value = '';
+  document.getElementById('uWeaponNotes').value = '';
+  document.getElementById('uNotes').value = '';
+  uPortrait.reset(); uWeapon.reset();
+  document.getElementById('piecesContainer').innerHTML = '';
+  pieceHandlers = [];
+  buildDialog.showModal();
+}));
+document.getElementById('buildCancel').addEventListener('click', () => buildDialog.close());
+
+document.getElementById('buildSave').addEventListener('click', async () => {
+  const pieces = pieceHandlers.filter(Boolean).map(h => ({ name:h.getName(), notes:h.getNotes(), image:h.getImage() }));
+  const payload = {
+    game: document.getElementById('uGame').value,
+    name: document.getElementById('uName').value.trim() || 'Personaje sin nombre',
+    portrait: uPortrait.get(),
+    weaponName: document.getElementById('uWeaponName').value.trim(),
+    weaponImage: uWeapon.get(),
+    weaponNotes: document.getElementById('uWeaponNotes').value.trim(),
+    pieces,
+    notes: document.getElementById('uNotes').value.trim()
+  };
+  try{
+    if(editingBuildId){
+      await db.collection('builds').doc(editingBuildId).update(payload);
+    } else {
+      await db.collection('builds').add(payload);
+    }
+    buildDialog.close();
+  }catch(err){ alert('Error al guardar: ' + err.message); }
+});
+
+document.addEventListener('click', (e) => {
+  if(e.target.dataset.editBuild){
+    const u = buildsData.find(x => x.id === e.target.dataset.editBuild);
+    if(!u) return;
+    editingBuildId = u.id;
+    document.getElementById('buildDialogTitle').textContent = 'Editar build';
+    document.getElementById('uGame').value = u.game;
+    document.getElementById('uName').value = u.name;
+    document.getElementById('uWeaponName').value = u.weaponName || '';
+    document.getElementById('uWeaponNotes').value = u.weaponNotes || '';
+    document.getElementById('uNotes').value = u.notes || '';
+    uPortrait.set(u.portrait);
+    uWeapon.set(u.weaponImage);
+    document.getElementById('piecesContainer').innerHTML = '';
+    pieceHandlers = [];
+    (u.pieces||[]).forEach(p => addPieceRow(p));
+    buildDialog.showModal();
+  }
+  if(e.target.dataset.delBuild){
+    if(confirm('¿Eliminar esta build?')){
+      db.collection('builds').doc(e.target.dataset.delBuild).delete();
+    }
+  }
+});
+
+// ====== CONFIG DIALOG ======
+const configDialog = document.getElementById('configDialog');
+const cBg = wireImageInput('cBgFile', 'cBgPreview', 1600);
+let selectedBgType = 'preset';
+let selectedPreset = 'aubergine';
+
+document.getElementById('openConfigBtn').addEventListener('click', async () => {
+  const doc = await db.collection('config').doc('site').get();
+  const data = doc.exists ? doc.data() : {};
+  document.getElementById('cTitle').value = data.title || '';
+  document.getElementById('cSubtitle').value = data.subtitle || '';
+  document.getElementById('cSolidColor').value = data.bgColor || '#140f1f';
+  cBg.set(data.bgImage);
+  selectedBgType = data.bgType || 'preset';
+  selectedPreset = data.bgPreset || 'aubergine';
+  setBgType(selectedBgType);
+  renderPresetGrid();
+  configDialog.showModal();
+});
+document.getElementById('configCancel').addEventListener('click', () => configDialog.close());
+
+function renderPresetGrid(){
+  const grid = document.getElementById('presetGrid');
+  grid.innerHTML = '';
+  BG_PRESETS.forEach(p => {
+    const sw = document.createElement('div');
+    sw.className = 'preset-swatch' + (p.id === selectedPreset ? ' active' : '');
+    sw.style.background = p.css;
+    sw.title = p.label;
+    sw.addEventListener('click', () => { selectedPreset = p.id; renderPresetGrid(); });
+    grid.appendChild(sw);
+  });
+}
+
+document.querySelectorAll('.bg-opt').forEach(btn => btn.addEventListener('click', () => setBgType(btn.dataset.bgtype)));
+function setBgType(type){
+  selectedBgType = type;
+  document.querySelectorAll('.bg-opt').forEach(b => b.classList.toggle('active', b.dataset.bgtype === type));
+  document.getElementById('presetBlock').style.display = type === 'preset' ? 'block' : 'none';
+  document.getElementById('solidBlock').style.display = type === 'solid' ? 'block' : 'none';
+  document.getElementById('imageBlock').style.display = type === 'image' ? 'block' : 'none';
+}
+
+document.getElementById('configSave').addEventListener('click', async () => {
+  const payload = {
+    title: document.getElementById('cTitle').value.trim(),
+    subtitle: document.getElementById('cSubtitle').value.trim(),
+    bgType: selectedBgType,
+    bgPreset: selectedPreset,
+    bgColor: document.getElementById('cSolidColor').value,
+    bgImage: cBg.get()
+  };
+  try{
+    await db.collection('config').doc('site').set(payload, { merge: true });
+    configDialog.close();
+  }catch(err){ alert('Error al guardar: ' + err.message); }
+});
+</script>
+</body>
+</html>
