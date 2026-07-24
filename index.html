@@ -136,6 +136,9 @@
   .weapon-primary .info .stats{ font-size:.8rem; color:var(--dim); margin-top:4px; line-height:1.5; }
   .weapon-extra-list{ margin-bottom:6px; }
   .target-stats{ font-size:.82rem; color:var(--dim); line-height:1.6; background:rgba(255,255,255,.03); border:1px solid var(--edge); border-radius:8px; padding:10px 12px; margin:8px 0 14px; }
+  .target-stats .stat-line{ margin-bottom:5px; }
+  .target-stats .stat-line:last-child{ margin-bottom:0; }
+  .target-stats .stat-line b{ color:var(--ink); }
 
   .empty{ grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--dim); border:1px dashed var(--edge); border-radius:16px; }
 
@@ -308,8 +311,8 @@
     </div>
 
     <div class="field">
-      <label>Stats a buscar / objetivo</label>
-      <textarea id="uTargetStats" placeholder="ej. Disco 4: Daño crítico/Prob. Crítico — Disco 5: Ataque/Daño Físico — Disco 6: Ataque. Sub stats: Daño crítico, Probabilidad crítica, Ataque%..."></textarea>
+      <label>Stats a buscar / objetivo <span style="color:var(--dim); text-transform:none; font-weight:400;">(un stat por línea, queda más ordenado)</span></label>
+      <textarea id="uTargetStats" placeholder="Disco 4: Daño crítico / Prob. Crítico&#10;Disco 5: Ataque / Daño Físico&#10;Disco 6: Ataque&#10;Sub stats: Daño crítico, Prob. crítica, Ataque%" style="min-height:100px;"></textarea>
     </div>
 
     <div class="subsection">
@@ -594,6 +597,25 @@ function escapeHtml(s){
   return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+function formatStatsBlock(text){
+  if(!text) return '';
+  // separa por saltos de línea, y si no hay saltos, intenta separar por punto/guion seguido de mayúscula
+  let lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if(lines.length <= 1){
+    lines = text.split(/(?<=[a-záéíóúñ%])\s(?=(Disco|Slot|Artefacto|Sub ?stats?|Stats?|Arena|Cáliz|Corona|Copa|Reloj|Plumas|Flor)\b)/i)
+      .map(l => l.trim()).filter(Boolean);
+  }
+  return lines.map(line => {
+    const idx = line.indexOf(':');
+    if(idx > -1 && idx < 28){
+      const label = line.slice(0, idx + 1);
+      const rest = line.slice(idx + 1).trim();
+      return `<div class="stat-line"><b>${escapeHtml(label)}</b> ${escapeHtml(rest)}</div>`;
+    }
+    return `<div class="stat-line">${escapeHtml(line)}</div>`;
+  }).join('');
+}
+
 // ====== RENDER BUILDS ======
 function renderBuilds(){
   renderGameFilters('filtersBuilds', buildsData, 'builds');
@@ -661,7 +683,7 @@ function renderBuilds(){
       ` : ''}
     ` : '';
 
-    const targetStatsHtml = u.targetStats ? `<div class="target-stats">${escapeHtml(u.targetStats)}</div>` : '';
+    const targetStatsHtml = u.targetStats ? `<div class="target-stats">${formatStatsBlock(u.targetStats)}</div>` : '';
 
     const card = document.createElement('article');
     card.className = 'card build-card';
