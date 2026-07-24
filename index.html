@@ -14,6 +14,7 @@
     --gold:#f2c14e; --purple:#b98cea; --blue:#6fa9e6; --pink:#f28fc0;
     --overlay-bg: rgba(10,7,18,.55);
   }
+  html{ font-size:18px; }
   *{box-sizing:border-box;}
   body{
     margin:0; min-height:100vh; color:var(--ink); font-family:'Manrope', sans-serif;
@@ -87,6 +88,7 @@
 
   .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:18px; }
   #gridActive, #gridUpcoming{ grid-template-columns: 1fr; max-width: 750px; margin: 0 auto; }
+  #gridBuilds{ grid-template-columns: repeat(auto-fill, minmax(380px,1fr)); gap:26px; }
 
   .card{
     background:var(--card); border:1px solid var(--edge); border-radius:16px; overflow:hidden; position:relative;
@@ -109,16 +111,28 @@
     background:rgba(255,255,255,.04); border-radius:8px; padding:8px 10px; margin-bottom:10px;
   }
   .countdown b{ color:var(--game-color, var(--gold)); }
-  .card-actions{ display:flex; gap:8px; }
+  .card-actions{ display:flex; gap:8px; flex-wrap:wrap; }
   .icon-btn{
     background:transparent; border:1px solid var(--edge); color:var(--dim); border-radius:7px;
     padding:6px 10px; cursor:pointer; font-size:.85rem;
   }
   .icon-btn:hover{ color:var(--ink); border-color:var(--gold); }
 
+  /* Build cards — más grandes */
+  .build-card .card-img{ aspect-ratio: 3 / 4; max-height:460px; }
+  .build-card .card-body{ padding:26px; }
+  .build-card h3{ font-size:1.5rem; margin-bottom:12px; }
+  .build-card .section-label{ font-family:'JetBrains Mono', monospace; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--gold); margin:14px 0 6px; }
+  .team-avatars{ display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+  .team-avatar{ text-align:center; width:64px; }
+  .team-avatar .img{ width:56px; height:56px; border-radius:10px; background-size:cover; background-position:center; background-color:#1c1530; margin:0 auto 4px; border:1px solid var(--edge); }
+  .team-avatar .lbl{ font-size:.68rem; color:var(--dim); line-height:1.2; }
+  .piece-line{ display:flex; gap:10px; align-items:flex-start; margin-bottom:8px; }
+  .piece-line .thumb{ width:38px; height:38px; border-radius:7px; background-size:cover; background-position:center; flex-shrink:0; background-color:#1c1530; border:1px solid var(--edge); }
+
   .empty{ grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--dim); border:1px dashed var(--edge); border-radius:16px; }
 
-  dialog{ border:none; border-radius:16px; padding:0; background:var(--card); color:var(--ink); width:min(520px,92vw); max-height:88vh; }
+  dialog{ border:none; border-radius:16px; padding:0; background:var(--card); color:var(--ink); width:min(560px,92vw); max-height:88vh; }
   dialog::backdrop{ background:rgba(10,7,18,.75); }
   .dialog-inner{ padding:26px; overflow-y:auto; max-height:88vh; }
   .dialog-inner h2{ font-family:'Zen Dots'; font-weight:400; font-size:1.15rem; margin:0 0 18px; }
@@ -134,8 +148,12 @@
   .preview{ width:100%; height:100px; border-radius:8px; background-size:cover; background-position:center; border:1px solid var(--edge); margin-top:8px; display:flex; align-items:center; justify-content:center; color:var(--dim); font-size:.7rem; font-family:'JetBrains Mono', monospace; }
   .dialog-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
 
-  .piece-row{ border:1px solid var(--edge); border-radius:10px; padding:12px; margin-bottom:10px; position:relative; }
-  .piece-row .remove-piece{ position:absolute; top:8px; right:8px; background:none; border:none; color:var(--dim); cursor:pointer; }
+  .subsection{ border:1px solid var(--edge); border-radius:12px; padding:14px; margin-bottom:16px; background:rgba(255,255,255,.02); }
+  .subsection-title{ font-family:'JetBrains Mono', monospace; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--gold); margin-bottom:10px; }
+  .piece-row, .team-row{ border:1px solid var(--edge); border-radius:10px; padding:12px; margin-bottom:10px; position:relative; }
+  .piece-row .remove-piece, .team-row .remove-team{ position:absolute; top:8px; right:8px; background:none; border:none; color:var(--dim); cursor:pointer; font-size:.9rem; }
+  .mini-save-btn{ font-family:'JetBrains Mono', monospace; font-size:.66rem; padding:6px 10px; border-radius:6px; border:1px solid var(--edge); background:transparent; color:var(--dim); cursor:pointer; margin-top:6px; }
+  .mini-save-btn:hover{ color:var(--gold); border-color:var(--gold); }
   .bg-options{ display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
   .bg-opt{
     font-family:'JetBrains Mono', monospace; font-size:.7rem; padding:8px 12px; border-radius:8px;
@@ -145,6 +163,14 @@
   .preset-swatch{ width:100%; height:44px; border-radius:8px; cursor:pointer; border:2px solid transparent; }
   .preset-swatch.active{ border-color:var(--gold); }
   .preset-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+
+  /* Biblioteca */
+  .lib-subtabs{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .lib-subtab{
+    font-family:'JetBrains Mono', monospace; font-size:.75rem; font-weight:700; text-transform:uppercase;
+    padding:8px 14px; border-radius:8px; border:1px solid var(--edge); background:transparent; color:var(--dim); cursor:pointer;
+  }
+  .lib-subtab.active{ border-color:var(--gold); color:var(--gold); }
 
   footer{ padding:30px 6vw 60px; color:var(--dim); font-size:.72rem; font-family:'JetBrains Mono', monospace; border-top:1px solid var(--edge); }
   .loading{ text-align:center; padding:80px 20px; color:var(--dim); font-family:'JetBrains Mono', monospace; }
@@ -170,6 +196,7 @@
     <button class="tab active" data-panel="active">Banners activos</button>
     <button class="tab" data-panel="upcoming">Próximos banners</button>
     <button class="tab" data-panel="builds">Builds</button>
+    <button class="tab admin-only" style="display:none;" data-panel="library">Biblioteca</button>
   </nav>
 
   <main>
@@ -195,6 +222,21 @@
       </div>
       <div class="game-filters" id="filtersBuilds"></div>
       <div class="grid" id="gridBuilds"><div class="loading">Cargando builds...</div></div>
+    </section>
+
+    <section class="panel" id="panel-library">
+      <div class="toolbar">
+        <button class="btn btn-primary" data-open-lib="weapon">+ Nueva arma</button>
+        <button class="btn btn-primary" data-open-lib="piece">+ Nueva pieza / disco</button>
+        <button class="btn btn-primary" data-open-lib="character">+ Nuevo personaje (equipo)</button>
+      </div>
+      <div class="lib-subtabs">
+        <button class="lib-subtab active" data-libtype="weapon">Armas</button>
+        <button class="lib-subtab" data-libtype="piece">Piezas / discos</button>
+        <button class="lib-subtab" data-libtype="character">Personajes</button>
+      </div>
+      <div class="game-filters" id="filtersLibrary"></div>
+      <div class="grid" id="gridLibrary"><div class="loading">Cargando biblioteca...</div></div>
     </section>
   </main>
 
@@ -251,25 +293,68 @@
       <input type="file" id="uPortraitFile" accept="image/*">
       <div class="preview" id="uPortraitPreview">sin imagen</div>
     </div>
-    <div class="field"><label>Arma / equipo principal (nombre)</label><input id="uWeaponName" placeholder="ej. nombre del arma o soporte"></div>
-    <div class="field">
-      <label>Imagen del arma</label>
-      <input type="file" id="uWeaponFile" accept="image/*">
-      <div class="preview" id="uWeaponPreview">sin imagen</div>
-    </div>
-    <div class="field"><label>Notas del arma</label><textarea id="uWeaponNotes" placeholder="refinamiento, superposición, etc."></textarea></div>
 
-    <div class="field">
-      <label>Artefactos / discos / soportes</label>
+    <div class="subsection">
+      <div class="subsection-title">Arma</div>
+      <div class="field">
+        <label>Elegir de biblioteca</label>
+        <select id="uWeaponSelect"><option value="">-- Personalizada / nueva --</option></select>
+      </div>
+      <div class="field"><label>Nombre del arma</label><input id="uWeaponName" placeholder="ej. nombre del arma o soporte"></div>
+      <div class="field">
+        <label>Imagen del arma</label>
+        <input type="file" id="uWeaponFile" accept="image/*">
+        <div class="preview" id="uWeaponPreview">sin imagen</div>
+      </div>
+      <div class="field"><label>Estadísticas del arma</label><textarea id="uWeaponStats" placeholder="ej. ATQ base, sub-stat, refinamiento..."></textarea></div>
+      <div class="field"><label>Notas del arma</label><textarea id="uWeaponNotes" placeholder="refinamiento, superposición, etc."></textarea></div>
+      <button type="button" class="mini-save-btn" id="saveWeaponToLib">💾 Guardar esta arma en biblioteca</button>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-title">Artefactos / discos / soportes</div>
       <div id="piecesContainer"></div>
       <button type="button" class="btn btn-ghost" id="addPieceBtn">+ agregar pieza</button>
     </div>
 
-    <div class="field"><label>Notas generales de la build</label><textarea id="uNotes" placeholder="stats objetivo, prioridad de sub-stats, equipo recomendado..."></textarea></div>
+    <div class="subsection">
+      <div class="subsection-title">Equipo recomendado</div>
+      <div id="teamContainer"></div>
+      <button type="button" class="btn btn-ghost" id="addTeamBtn">+ agregar miembro</button>
+    </div>
+
+    <div class="field"><label>Notas generales de la build</label><textarea id="uNotes" placeholder="stats objetivo, prioridad de sub-stats, rotación..."></textarea></div>
 
     <div class="dialog-actions">
       <button class="btn btn-ghost" id="buildCancel">Cancelar</button>
       <button class="btn btn-primary" id="buildSave">Guardar</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Library item dialog -->
+<dialog id="libDialog">
+  <div class="dialog-inner">
+    <h2 id="libDialogTitle">Nuevo elemento</h2>
+    <div class="field">
+      <label>Juego</label>
+      <select id="lGame">
+        <option value="genshin">Genshin Impact</option>
+        <option value="hsr">Honkai: Star Rail</option>
+        <option value="zzz">Zenless Zone Zero</option>
+        <option value="uma">Umamusume</option>
+      </select>
+    </div>
+    <div class="field"><label>Nombre</label><input id="lName" placeholder="ej. Espada de la vendimia, Disco 4, Furina..."></div>
+    <div class="field">
+      <label>Imagen</label>
+      <input type="file" id="lImageFile" accept="image/*">
+      <div class="preview" id="lImagePreview">sin imagen</div>
+    </div>
+    <div class="field"><label>Estadísticas / notas</label><textarea id="lStats" placeholder="ej. ATQ+, Daño crítico, sets recomendados, rol en el equipo..."></textarea></div>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" id="libCancel">Cancelar</button>
+      <button class="btn btn-primary" id="libSave">Guardar</button>
     </div>
   </div>
 </dialog>
@@ -437,7 +522,9 @@ setInterval(() => {
 // ====== STATE ======
 let bannersData = [];
 let buildsData = [];
-let activeGameFilter = { active: null, upcoming: null, builds: null };
+let libraryData = [];
+let currentLibType = 'weapon';
+let activeGameFilter = { active: null, upcoming: null, builds: null, library: null };
 
 // ====== RENDER BANNERS ======
 function renderBanners(){
@@ -451,20 +538,21 @@ function renderBanners(){
 
 function renderGameFilters(containerId, list, key){
   const el = document.getElementById(containerId);
+  if(!el) return;
   const gamesPresent = [...new Set(list.map(x => x.game))];
   el.innerHTML = '';
   if(gamesPresent.length === 0) return;
   const allChip = document.createElement('button');
   allChip.className = 'chip' + (activeGameFilter[key]===null ? ' active':'');
   allChip.textContent = 'Todos';
-  allChip.addEventListener('click', () => { activeGameFilter[key]=null; renderBanners(); renderBuilds(); });
+  allChip.addEventListener('click', () => { activeGameFilter[key]=null; renderBanners(); renderBuilds(); renderLibrary(); });
   el.appendChild(allChip);
   gamesPresent.forEach(g => {
     const chip = document.createElement('button');
     chip.className = 'chip' + (activeGameFilter[key]===g ? ' active':'');
     chip.style.setProperty('--chip-color', GAMES[g] ? GAMES[g].color : 'var(--gold)');
     chip.textContent = GAMES[g] ? GAMES[g].label : g;
-    chip.addEventListener('click', () => { activeGameFilter[key]=g; renderBanners(); renderBuilds(); });
+    chip.addEventListener('click', () => { activeGameFilter[key]=g; renderBanners(); renderBuilds(); renderLibrary(); });
     el.appendChild(chip);
   });
 }
@@ -518,22 +606,41 @@ function renderBuilds(){
   filtered.forEach(u => {
     const game = GAMES[u.game] || { label:u.game, color:'var(--gold)' };
     const piecesHtml = (u.pieces||[]).map(p => `
-      <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
-        ${p.image ? `<div style="width:36px;height:36px;border-radius:6px;background-size:cover;background-position:center;background-image:url(${p.image});flex-shrink:0;"></div>` : ''}
-        <div style="font-size:.78rem; color:var(--dim);"><b style="color:var(--ink)">${escapeHtml(p.name||'')}</b>${p.notes ? ' — '+escapeHtml(p.notes) : ''}</div>
+      <div class="piece-line">
+        ${p.image ? `<div class="thumb" style="background-image:url(${p.image});"></div>` : ''}
+        <div style="font-size:.82rem; color:var(--dim);">
+          <b style="color:var(--ink)">${escapeHtml(p.name||'')}</b>${p.stats ? ' — '+escapeHtml(p.stats) : ''}${p.notes ? ' — '+escapeHtml(p.notes) : ''}
+        </div>
       </div>
     `).join('');
 
+    const teamHtml = (u.team||[]).length ? `
+      <div class="section-label">Equipo recomendado</div>
+      <div class="team-avatars">
+        ${(u.team||[]).map(t => `
+          <div class="team-avatar">
+            <div class="img" style="${t.image ? `background-image:url(${t.image});` : ''}"></div>
+            <div class="lbl">${escapeHtml(t.name||'')}${t.notes ? '<br>'+escapeHtml(t.notes) : ''}</div>
+          </div>
+        `).join('')}
+      </div>
+    ` : '';
+
     const card = document.createElement('article');
-    card.className = 'card';
+    card.className = 'card build-card';
     card.innerHTML = `
       <div class="card-img" style="${u.portrait ? `background-image:url(${u.portrait})` : ''}">${u.portrait?'':'sin retrato'}</div>
       <div class="card-body">
         <span class="badge" style="--game-color:${game.color}">${game.label}</span>
         <h3>${escapeHtml(u.name)}</h3>
-        ${u.weaponName ? `<div style="font-size:.82rem; margin-bottom:8px;"><b>Arma:</b> ${escapeHtml(u.weaponName)}${u.weaponNotes ? ' — '+escapeHtml(u.weaponNotes):''}</div>` : ''}
-        ${piecesHtml}
-        ${u.notes ? `<p class="notes">${escapeHtml(u.notes)}</p>` : ''}
+        ${u.weaponName ? `
+          <div class="section-label">Arma</div>
+          <div style="font-size:.86rem; margin-bottom:6px;"><b>${escapeHtml(u.weaponName)}</b>${u.weaponNotes ? ' — '+escapeHtml(u.weaponNotes):''}</div>
+          ${u.weaponStats ? `<div style="font-size:.8rem; color:var(--dim); margin-bottom:10px;">${escapeHtml(u.weaponStats)}</div>` : ''}
+        ` : ''}
+        ${piecesHtml ? `<div class="section-label">Piezas / discos</div>${piecesHtml}` : ''}
+        ${teamHtml}
+        ${u.notes ? `<p class="notes" style="margin-top:12px;">${escapeHtml(u.notes)}</p>` : ''}
         <div class="card-actions admin-only" style="display:${isAdmin?'flex':'none'}">
           <button class="icon-btn" data-edit-build="${u.id}">✎ Editar</button>
           <button class="icon-btn" data-del-build="${u.id}">✕ Eliminar</button>
@@ -544,6 +651,48 @@ function renderBuilds(){
   });
 }
 
+// ====== RENDER LIBRARY ======
+function renderLibrary(){
+  const gridEl = document.getElementById('gridLibrary');
+  if(!gridEl) return;
+  const itemsOfType = libraryData.filter(i => i.type === currentLibType);
+  renderGameFilters('filtersLibrary', itemsOfType, 'library');
+  const filtered = activeGameFilter.library ? itemsOfType.filter(i => i.game === activeGameFilter.library) : itemsOfType;
+  gridEl.innerHTML = '';
+  if(filtered.length === 0){
+    gridEl.innerHTML = '<div class="empty">No hay elementos guardados todavía.</div>';
+    return;
+  }
+  filtered.forEach(i => {
+    const game = GAMES[i.game] || { label:i.game, color:'var(--gold)' };
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-img" style="${i.image ? `background-image:url(${i.image})` : ''}">${i.image?'':'sin imagen'}</div>
+      <div class="card-body">
+        <span class="badge" style="--game-color:${game.color}">${game.label}</span>
+        <h3>${escapeHtml(i.name)}</h3>
+        ${i.stats ? `<p class="notes">${escapeHtml(i.stats)}</p>` : ''}
+        <div class="card-actions">
+          <button class="icon-btn" data-edit-lib="${i.id}">✎ Editar</button>
+          <button class="icon-btn" data-del-lib="${i.id}">✕ Eliminar</button>
+        </div>
+      </div>
+    `;
+    gridEl.appendChild(card);
+  });
+}
+
+document.querySelectorAll('.lib-subtab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lib-subtab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentLibType = btn.dataset.libtype;
+    activeGameFilter.library = null;
+    renderLibrary();
+  });
+});
+
 // ====== FIRESTORE LISTENERS ======
 db.collection('banners').onSnapshot(snap => {
   bannersData = snap.docs.map(d => ({ id:d.id, ...d.data() }));
@@ -553,6 +702,12 @@ db.collection('banners').onSnapshot(snap => {
 db.collection('builds').onSnapshot(snap => {
   buildsData = snap.docs.map(d => ({ id:d.id, ...d.data() }));
   renderBuilds();
+}, err => console.error(err));
+
+db.collection('library').onSnapshot(snap => {
+  libraryData = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+  renderLibrary();
+  refreshOpenBuildSelects();
 }, err => console.error(err));
 
 db.collection('config').doc('site').onSnapshot(doc => {
@@ -641,12 +796,57 @@ function toLocalInput(ts){
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+// ====== LIBRARY HELPERS (used by build dialog) ======
+function populateSelectOptions(selectEl, type){
+  if(!selectEl) return;
+  const game = document.getElementById('uGame').value;
+  const items = libraryData.filter(i => i.type === type && i.game === game);
+  const currentVal = selectEl.value;
+  selectEl.innerHTML = '<option value="">-- Personalizada / nueva --</option>' +
+    items.map(i => `<option value="${i.id}">${escapeHtml(i.name)}</option>`).join('');
+  if(items.some(i => i.id === currentVal)) selectEl.value = currentVal;
+}
+
+function refreshOpenBuildSelects(){
+  if(!buildDialog.open) return;
+  populateSelectOptions(document.getElementById('uWeaponSelect'), 'weapon');
+  document.querySelectorAll('.piece-select').forEach(sel => populateSelectOptions(sel, 'piece'));
+  document.querySelectorAll('.team-select').forEach(sel => populateSelectOptions(sel, 'character'));
+}
+
+async function saveToLibrary(type, name, image, stats){
+  if(!name){ alert('Poné un nombre antes de guardar en la biblioteca.'); return; }
+  try{
+    await db.collection('library').add({
+      game: document.getElementById('uGame').value,
+      type, name, image: image || '', stats: stats || ''
+    });
+    alert('Guardado en biblioteca.');
+  }catch(err){ alert('Error al guardar en biblioteca: ' + err.message); }
+}
+
 // ====== BUILD DIALOG ======
 const buildDialog = document.getElementById('buildDialog');
 const uPortrait = wireImageInput('uPortraitFile', 'uPortraitPreview', 700);
 const uWeapon = wireImageInput('uWeaponFile', 'uWeaponPreview', 500);
 let editingBuildId = null;
 let pieceHandlers = [];
+let teamHandlers = [];
+
+document.getElementById('uGame').addEventListener('change', refreshOpenBuildSelects);
+
+document.getElementById('uWeaponSelect').addEventListener('change', (e) => {
+  const item = libraryData.find(i => i.id === e.target.value);
+  if(item){
+    document.getElementById('uWeaponName').value = item.name || '';
+    document.getElementById('uWeaponStats').value = item.stats || '';
+    uWeapon.set(item.image);
+  }
+});
+
+document.getElementById('saveWeaponToLib').addEventListener('click', () => {
+  saveToLibrary('weapon', document.getElementById('uWeaponName').value.trim(), uWeapon.get(), document.getElementById('uWeaponStats').value.trim());
+});
 
 function addPieceRow(existing){
   const container = document.getElementById('piecesContainer');
@@ -655,15 +855,23 @@ function addPieceRow(existing){
   row.className = 'piece-row';
   row.innerHTML = `
     <button type="button" class="remove-piece" data-idx="${idx}">✕</button>
+    <div class="field"><label>Elegir de biblioteca</label><select class="piece-select"><option value="">-- Personalizada / nueva --</option></select></div>
     <div class="field"><label>Nombre de la pieza</label><input class="piece-name" placeholder="ej. Disco 4, Artefacto de arenas..."></div>
     <div class="field"><label>Imagen</label><input type="file" class="piece-file" accept="image/*"><div class="preview piece-preview">sin imagen</div></div>
-    <div class="field"><label>Notas</label><input class="piece-notes" placeholder="stat principal, sets..."></div>
+    <div class="field"><label>Estadísticas</label><textarea class="piece-stats" placeholder="ej. Daño crítico, ATQ%, sets recomendados..."></textarea></div>
+    <div class="field"><label>Notas</label><input class="piece-notes" placeholder="cantidad de piezas, prioridad, etc."></div>
+    <button type="button" class="mini-save-btn piece-save-lib">💾 Guardar en biblioteca</button>
   `;
   container.appendChild(row);
+
+  const select = row.querySelector('.piece-select');
+  populateSelectOptions(select, 'piece');
+
   const fileInput = row.querySelector('.piece-file');
   const preview = row.querySelector('.piece-preview');
   let pieceData = existing ? existing.image || '' : '';
   if(pieceData){ preview.style.backgroundImage = `url(${pieceData})`; preview.textContent=''; }
+
   fileInput.addEventListener('change', async () => {
     const file = fileInput.files[0];
     if(!file) return;
@@ -672,16 +880,36 @@ function addPieceRow(existing){
     preview.style.backgroundImage = `url(${pieceData})`;
     preview.textContent = '';
   });
+
+  select.addEventListener('change', () => {
+    const item = libraryData.find(i => i.id === select.value);
+    if(item){
+      row.querySelector('.piece-name').value = item.name || '';
+      row.querySelector('.piece-stats').value = item.stats || '';
+      pieceData = item.image || '';
+      preview.style.backgroundImage = pieceData ? `url(${pieceData})` : 'none';
+      preview.textContent = pieceData ? '' : 'sin imagen';
+    }
+  });
+
   if(existing){
     row.querySelector('.piece-name').value = existing.name || '';
+    row.querySelector('.piece-stats').value = existing.stats || '';
     row.querySelector('.piece-notes').value = existing.notes || '';
   }
+
   row.querySelector('.remove-piece').addEventListener('click', () => {
     row.remove();
     pieceHandlers[idx] = null;
   });
+
+  row.querySelector('.piece-save-lib').addEventListener('click', () => {
+    saveToLibrary('piece', row.querySelector('.piece-name').value.trim(), pieceData, row.querySelector('.piece-stats').value.trim());
+  });
+
   pieceHandlers[idx] = {
     getName: () => row.querySelector('.piece-name').value.trim(),
+    getStats: () => row.querySelector('.piece-stats').value.trim(),
     getNotes: () => row.querySelector('.piece-notes').value.trim(),
     getImage: () => pieceData
   };
@@ -689,31 +917,103 @@ function addPieceRow(existing){
 
 document.getElementById('addPieceBtn').addEventListener('click', () => addPieceRow());
 
+function addTeamRow(existing){
+  const container = document.getElementById('teamContainer');
+  const idx = teamHandlers.length;
+  const row = document.createElement('div');
+  row.className = 'team-row';
+  row.innerHTML = `
+    <button type="button" class="remove-team" data-idx="${idx}">✕</button>
+    <div class="field"><label>Elegir de biblioteca</label><select class="team-select"><option value="">-- Personalizado / nuevo --</option></select></div>
+    <div class="field"><label>Nombre del personaje</label><input class="team-name" placeholder="ej. Bennett, Yunli, Soukaku..."></div>
+    <div class="field"><label>Imagen</label><input type="file" class="team-file" accept="image/*"><div class="preview team-preview">sin imagen</div></div>
+    <div class="field"><label>Notas</label><input class="team-notes" placeholder="rol en el equipo, prioridad, etc."></div>
+    <button type="button" class="mini-save-btn team-save-lib">💾 Guardar en biblioteca</button>
+  `;
+  container.appendChild(row);
+
+  const select = row.querySelector('.team-select');
+  populateSelectOptions(select, 'character');
+
+  const fileInput = row.querySelector('.team-file');
+  const preview = row.querySelector('.team-preview');
+  let teamData = existing ? existing.image || '' : '';
+  if(teamData){ preview.style.backgroundImage = `url(${teamData})`; preview.textContent=''; }
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if(!file) return;
+    preview.textContent = 'procesando...';
+    teamData = await compressImage(file, 500, 0.7);
+    preview.style.backgroundImage = `url(${teamData})`;
+    preview.textContent = '';
+  });
+
+  select.addEventListener('change', () => {
+    const item = libraryData.find(i => i.id === select.value);
+    if(item){
+      row.querySelector('.team-name').value = item.name || '';
+      teamData = item.image || '';
+      preview.style.backgroundImage = teamData ? `url(${teamData})` : 'none';
+      preview.textContent = teamData ? '' : 'sin imagen';
+    }
+  });
+
+  if(existing){
+    row.querySelector('.team-name').value = existing.name || '';
+    row.querySelector('.team-notes').value = existing.notes || '';
+  }
+
+  row.querySelector('.remove-team').addEventListener('click', () => {
+    row.remove();
+    teamHandlers[idx] = null;
+  });
+
+  row.querySelector('.team-save-lib').addEventListener('click', () => {
+    saveToLibrary('character', row.querySelector('.team-name').value.trim(), teamData, '');
+  });
+
+  teamHandlers[idx] = {
+    getName: () => row.querySelector('.team-name').value.trim(),
+    getNotes: () => row.querySelector('.team-notes').value.trim(),
+    getImage: () => teamData
+  };
+}
+
+document.getElementById('addTeamBtn').addEventListener('click', () => addTeamRow());
+
 document.querySelectorAll('[data-open="build"]').forEach(btn => btn.addEventListener('click', () => {
   editingBuildId = null;
   document.getElementById('buildDialogTitle').textContent = 'Nueva build';
   document.getElementById('uGame').value = 'genshin';
   document.getElementById('uName').value = '';
   document.getElementById('uWeaponName').value = '';
+  document.getElementById('uWeaponStats').value = '';
   document.getElementById('uWeaponNotes').value = '';
   document.getElementById('uNotes').value = '';
   uPortrait.reset(); uWeapon.reset();
   document.getElementById('piecesContainer').innerHTML = '';
+  document.getElementById('teamContainer').innerHTML = '';
   pieceHandlers = [];
+  teamHandlers = [];
+  populateSelectOptions(document.getElementById('uWeaponSelect'), 'weapon');
   buildDialog.showModal();
 }));
 document.getElementById('buildCancel').addEventListener('click', () => buildDialog.close());
 
 document.getElementById('buildSave').addEventListener('click', async () => {
-  const pieces = pieceHandlers.filter(Boolean).map(h => ({ name:h.getName(), notes:h.getNotes(), image:h.getImage() }));
+  const pieces = pieceHandlers.filter(Boolean).map(h => ({ name:h.getName(), stats:h.getStats(), notes:h.getNotes(), image:h.getImage() }));
+  const team = teamHandlers.filter(Boolean).map(h => ({ name:h.getName(), notes:h.getNotes(), image:h.getImage() }));
   const payload = {
     game: document.getElementById('uGame').value,
     name: document.getElementById('uName').value.trim() || 'Personaje sin nombre',
     portrait: uPortrait.get(),
     weaponName: document.getElementById('uWeaponName').value.trim(),
     weaponImage: uWeapon.get(),
+    weaponStats: document.getElementById('uWeaponStats').value.trim(),
     weaponNotes: document.getElementById('uWeaponNotes').value.trim(),
     pieces,
+    team,
     notes: document.getElementById('uNotes').value.trim()
   };
   try{
@@ -735,18 +1035,81 @@ document.addEventListener('click', (e) => {
     document.getElementById('uGame').value = u.game;
     document.getElementById('uName').value = u.name;
     document.getElementById('uWeaponName').value = u.weaponName || '';
+    document.getElementById('uWeaponStats').value = u.weaponStats || '';
     document.getElementById('uWeaponNotes').value = u.weaponNotes || '';
     document.getElementById('uNotes').value = u.notes || '';
     uPortrait.set(u.portrait);
     uWeapon.set(u.weaponImage);
+    populateSelectOptions(document.getElementById('uWeaponSelect'), 'weapon');
     document.getElementById('piecesContainer').innerHTML = '';
+    document.getElementById('teamContainer').innerHTML = '';
     pieceHandlers = [];
+    teamHandlers = [];
     (u.pieces||[]).forEach(p => addPieceRow(p));
+    (u.team||[]).forEach(t => addTeamRow(t));
     buildDialog.showModal();
   }
   if(e.target.dataset.delBuild){
     if(confirm('¿Eliminar esta build?')){
       db.collection('builds').doc(e.target.dataset.delBuild).delete();
+    }
+  }
+});
+
+// ====== LIBRARY DIALOG ======
+const libDialog = document.getElementById('libDialog');
+const lImg = wireImageInput('lImageFile', 'lImagePreview', 600);
+let editingLibId = null;
+let editingLibType = 'weapon';
+
+const LIB_TYPE_LABELS = { weapon: 'arma', piece: 'pieza / disco', character: 'personaje' };
+
+document.querySelectorAll('[data-open-lib]').forEach(btn => btn.addEventListener('click', () => {
+  editingLibId = null;
+  editingLibType = btn.dataset.openLib;
+  document.getElementById('libDialogTitle').textContent = 'Nuevo/a ' + LIB_TYPE_LABELS[editingLibType];
+  document.getElementById('lGame').value = activeGameFilter.library || 'genshin';
+  document.getElementById('lName').value = '';
+  document.getElementById('lStats').value = '';
+  lImg.reset();
+  libDialog.showModal();
+}));
+document.getElementById('libCancel').addEventListener('click', () => libDialog.close());
+
+document.getElementById('libSave').addEventListener('click', async () => {
+  const payload = {
+    game: document.getElementById('lGame').value,
+    type: editingLibType,
+    name: document.getElementById('lName').value.trim() || 'Sin nombre',
+    image: lImg.get(),
+    stats: document.getElementById('lStats').value.trim()
+  };
+  try{
+    if(editingLibId){
+      await db.collection('library').doc(editingLibId).update(payload);
+    } else {
+      await db.collection('library').add(payload);
+    }
+    libDialog.close();
+  }catch(err){ alert('Error al guardar: ' + err.message); }
+});
+
+document.addEventListener('click', (e) => {
+  if(e.target.dataset.editLib){
+    const i = libraryData.find(x => x.id === e.target.dataset.editLib);
+    if(!i) return;
+    editingLibId = i.id;
+    editingLibType = i.type;
+    document.getElementById('libDialogTitle').textContent = 'Editar ' + LIB_TYPE_LABELS[editingLibType];
+    document.getElementById('lGame').value = i.game;
+    document.getElementById('lName').value = i.name;
+    document.getElementById('lStats').value = i.stats || '';
+    lImg.set(i.image);
+    libDialog.showModal();
+  }
+  if(e.target.dataset.delLib){
+    if(confirm('¿Eliminar este elemento de la biblioteca?')){
+      db.collection('library').doc(e.target.dataset.delLib).delete();
     }
   }
 });
