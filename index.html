@@ -130,6 +130,13 @@
   .piece-line{ display:flex; gap:10px; align-items:flex-start; margin-bottom:8px; }
   .piece-line .thumb{ width:38px; height:38px; border-radius:7px; background-size:cover; background-position:center; flex-shrink:0; background-color:#1c1530; border:1px solid var(--edge); }
 
+  .weapon-primary{ display:flex; gap:14px; align-items:flex-start; margin-bottom:10px; }
+  .weapon-primary .img{ width:96px; height:96px; border-radius:12px; background-size:cover; background-position:center; background-color:#1c1530; border:1px solid var(--edge); flex-shrink:0; }
+  .weapon-primary .info b{ font-size:1.02rem; display:block; margin-bottom:3px; }
+  .weapon-primary .info .stats{ font-size:.8rem; color:var(--dim); margin-top:4px; line-height:1.5; }
+  .weapon-extra-list{ margin-bottom:6px; }
+  .target-stats{ font-size:.82rem; color:var(--dim); line-height:1.6; background:rgba(255,255,255,.03); border:1px solid var(--edge); border-radius:8px; padding:10px 12px; margin:8px 0 14px; }
+
   .empty{ grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--dim); border:1px dashed var(--edge); border-radius:16px; }
 
   dialog{ border:none; border-radius:16px; padding:0; background:var(--card); color:var(--ink); width:min(560px,92vw); max-height:88vh; }
@@ -295,20 +302,14 @@
     </div>
 
     <div class="subsection">
-      <div class="subsection-title">Arma</div>
-      <div class="field">
-        <label>Elegir de biblioteca</label>
-        <select id="uWeaponSelect"><option value="">-- Personalizada / nueva --</option></select>
-      </div>
-      <div class="field"><label>Nombre del arma</label><input id="uWeaponName" placeholder="ej. nombre del arma o soporte"></div>
-      <div class="field">
-        <label>Imagen del arma</label>
-        <input type="file" id="uWeaponFile" accept="image/*">
-        <div class="preview" id="uWeaponPreview">sin imagen</div>
-      </div>
-      <div class="field"><label>Estadísticas del arma</label><textarea id="uWeaponStats" placeholder="ej. ATQ base, sub-stat, refinamiento..."></textarea></div>
-      <div class="field"><label>Notas del arma</label><textarea id="uWeaponNotes" placeholder="refinamiento, superposición, etc."></textarea></div>
-      <button type="button" class="mini-save-btn" id="saveWeaponToLib">💾 Guardar esta arma en biblioteca</button>
+      <div class="subsection-title">Armas <span style="color:var(--dim); text-transform:none; font-weight:400;">(la primera se muestra grande, el resto como opciones)</span></div>
+      <div id="weaponsContainer"></div>
+      <button type="button" class="btn btn-ghost" id="addWeaponBtn">+ agregar arma</button>
+    </div>
+
+    <div class="field">
+      <label>Stats a buscar / objetivo</label>
+      <textarea id="uTargetStats" placeholder="ej. Disco 4: Daño crítico/Prob. Crítico — Disco 5: Ataque/Daño Físico — Disco 6: Ataque. Sub stats: Daño crítico, Probabilidad crítica, Ataque%..."></textarea>
     </div>
 
     <div class="subsection">
@@ -626,6 +627,42 @@ function renderBuilds(){
       </div>
     ` : '';
 
+    // Compatibilidad: builds viejas guardaban un único campo de arma
+    let weaponsList = u.weapons;
+    if(!weaponsList || weaponsList.length === 0){
+      weaponsList = (u.weaponName || u.weaponImage || u.weaponStats)
+        ? [{ name:u.weaponName||'', image:u.weaponImage||'', stats:u.weaponStats||'', notes:u.weaponNotes||'' }]
+        : [];
+    }
+    const mainWeapon = weaponsList[0];
+    const extraWeapons = weaponsList.slice(1);
+
+    const weaponHtml = mainWeapon ? `
+      <div class="section-label">Arma</div>
+      <div class="weapon-primary">
+        ${mainWeapon.image ? `<div class="img" style="background-image:url(${mainWeapon.image});"></div>` : ''}
+        <div class="info">
+          <b>${escapeHtml(mainWeapon.name||'')}</b>
+          ${mainWeapon.notes ? `<div style="font-size:.8rem; color:var(--dim);">${escapeHtml(mainWeapon.notes)}</div>` : ''}
+          ${mainWeapon.stats ? `<div class="stats">${escapeHtml(mainWeapon.stats)}</div>` : ''}
+        </div>
+      </div>
+      ${extraWeapons.length ? `
+        <div class="weapon-extra-list">
+          ${extraWeapons.map(w => `
+            <div class="piece-line">
+              ${w.image ? `<div class="thumb" style="background-image:url(${w.image});"></div>` : ''}
+              <div style="font-size:.8rem; color:var(--dim);">
+                <b style="color:var(--ink)">${escapeHtml(w.name||'')}</b>${w.stats ? ' — '+escapeHtml(w.stats) : ''}${w.notes ? ' — '+escapeHtml(w.notes) : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    ` : '';
+
+    const targetStatsHtml = u.targetStats ? `<div class="target-stats">${escapeHtml(u.targetStats)}</div>` : '';
+
     const card = document.createElement('article');
     card.className = 'card build-card';
     card.innerHTML = `
@@ -633,11 +670,8 @@ function renderBuilds(){
       <div class="card-body">
         <span class="badge" style="--game-color:${game.color}">${game.label}</span>
         <h3>${escapeHtml(u.name)}</h3>
-        ${u.weaponName ? `
-          <div class="section-label">Arma</div>
-          <div style="font-size:.86rem; margin-bottom:6px;"><b>${escapeHtml(u.weaponName)}</b>${u.weaponNotes ? ' — '+escapeHtml(u.weaponNotes):''}</div>
-          ${u.weaponStats ? `<div style="font-size:.8rem; color:var(--dim); margin-bottom:10px;">${escapeHtml(u.weaponStats)}</div>` : ''}
-        ` : ''}
+        ${weaponHtml}
+        ${targetStatsHtml}
         ${piecesHtml ? `<div class="section-label">Piezas / discos</div>${piecesHtml}` : ''}
         ${teamHtml}
         ${u.notes ? `<p class="notes" style="margin-top:12px;">${escapeHtml(u.notes)}</p>` : ''}
@@ -809,7 +843,7 @@ function populateSelectOptions(selectEl, type){
 
 function refreshOpenBuildSelects(){
   if(!buildDialog.open) return;
-  populateSelectOptions(document.getElementById('uWeaponSelect'), 'weapon');
+  document.querySelectorAll('.weapon-select').forEach(sel => populateSelectOptions(sel, 'weapon'));
   document.querySelectorAll('.piece-select').forEach(sel => populateSelectOptions(sel, 'piece'));
   document.querySelectorAll('.team-select').forEach(sel => populateSelectOptions(sel, 'character'));
 }
@@ -828,25 +862,86 @@ async function saveToLibrary(type, name, image, stats){
 // ====== BUILD DIALOG ======
 const buildDialog = document.getElementById('buildDialog');
 const uPortrait = wireImageInput('uPortraitFile', 'uPortraitPreview', 700);
-const uWeapon = wireImageInput('uWeaponFile', 'uWeaponPreview', 500);
 let editingBuildId = null;
 let pieceHandlers = [];
 let teamHandlers = [];
+let weaponHandlers = [];
 
 document.getElementById('uGame').addEventListener('change', refreshOpenBuildSelects);
 
-document.getElementById('uWeaponSelect').addEventListener('change', (e) => {
-  const item = libraryData.find(i => i.id === e.target.value);
-  if(item){
-    document.getElementById('uWeaponName').value = item.name || '';
-    document.getElementById('uWeaponStats').value = item.stats || '';
-    uWeapon.set(item.image);
-  }
-});
+function addWeaponRow(existing){
+  const container = document.getElementById('weaponsContainer');
+  const idx = weaponHandlers.length;
+  const row = document.createElement('div');
+  row.className = 'piece-row';
+  row.innerHTML = `
+    <button type="button" class="remove-piece" data-idx="${idx}">✕</button>
+    <div class="field"><label style="color:var(--gold);">${idx===0 ? 'Arma principal (se muestra grande)' : 'Arma alternativa'}</label></div>
+    <div class="field"><label>Elegir de biblioteca</label><select class="weapon-select"><option value="">-- Personalizada / nueva --</option></select></div>
+    <div class="field"><label>Nombre del arma</label><input class="weapon-name" placeholder="ej. nombre del arma o soporte"></div>
+    <div class="field">
+      <label>Imagen del arma</label>
+      <input type="file" class="weapon-file" accept="image/*">
+      <div class="preview weapon-preview">sin imagen</div>
+    </div>
+    <div class="field"><label>Estadísticas del arma</label><textarea class="weapon-stats" placeholder="ej. ATQ base, sub-stat, refinamiento..."></textarea></div>
+    <div class="field"><label>Notas del arma</label><input class="weapon-notes" placeholder="refinamiento, superposición, etc."></div>
+    <button type="button" class="mini-save-btn weapon-save-lib">💾 Guardar esta arma en biblioteca</button>
+  `;
+  container.appendChild(row);
 
-document.getElementById('saveWeaponToLib').addEventListener('click', () => {
-  saveToLibrary('weapon', document.getElementById('uWeaponName').value.trim(), uWeapon.get(), document.getElementById('uWeaponStats').value.trim());
-});
+  const select = row.querySelector('.weapon-select');
+  populateSelectOptions(select, 'weapon');
+
+  const fileInput = row.querySelector('.weapon-file');
+  const preview = row.querySelector('.weapon-preview');
+  let weaponImg = existing ? existing.image || '' : '';
+  if(weaponImg){ preview.style.backgroundImage = `url(${weaponImg})`; preview.textContent=''; }
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if(!file) return;
+    preview.textContent = 'procesando...';
+    weaponImg = await compressImage(file, 600, 0.72);
+    preview.style.backgroundImage = `url(${weaponImg})`;
+    preview.textContent = '';
+  });
+
+  select.addEventListener('change', () => {
+    const item = libraryData.find(i => i.id === select.value);
+    if(item){
+      row.querySelector('.weapon-name').value = item.name || '';
+      row.querySelector('.weapon-stats').value = item.stats || '';
+      weaponImg = item.image || '';
+      preview.style.backgroundImage = weaponImg ? `url(${weaponImg})` : 'none';
+      preview.textContent = weaponImg ? '' : 'sin imagen';
+    }
+  });
+
+  if(existing){
+    row.querySelector('.weapon-name').value = existing.name || '';
+    row.querySelector('.weapon-stats').value = existing.stats || '';
+    row.querySelector('.weapon-notes').value = existing.notes || '';
+  }
+
+  row.querySelector('.remove-piece').addEventListener('click', () => {
+    row.remove();
+    weaponHandlers[idx] = null;
+  });
+
+  row.querySelector('.weapon-save-lib').addEventListener('click', () => {
+    saveToLibrary('weapon', row.querySelector('.weapon-name').value.trim(), weaponImg, row.querySelector('.weapon-stats').value.trim());
+  });
+
+  weaponHandlers[idx] = {
+    getName: () => row.querySelector('.weapon-name').value.trim(),
+    getStats: () => row.querySelector('.weapon-stats').value.trim(),
+    getNotes: () => row.querySelector('.weapon-notes').value.trim(),
+    getImage: () => weaponImg
+  };
+}
+
+document.getElementById('addWeaponBtn').addEventListener('click', () => addWeaponRow());
 
 function addPieceRow(existing){
   const container = document.getElementById('piecesContainer');
@@ -987,31 +1082,30 @@ document.querySelectorAll('[data-open="build"]').forEach(btn => btn.addEventList
   document.getElementById('buildDialogTitle').textContent = 'Nueva build';
   document.getElementById('uGame').value = 'genshin';
   document.getElementById('uName').value = '';
-  document.getElementById('uWeaponName').value = '';
-  document.getElementById('uWeaponStats').value = '';
-  document.getElementById('uWeaponNotes').value = '';
+  document.getElementById('uTargetStats').value = '';
   document.getElementById('uNotes').value = '';
-  uPortrait.reset(); uWeapon.reset();
+  uPortrait.reset();
+  document.getElementById('weaponsContainer').innerHTML = '';
   document.getElementById('piecesContainer').innerHTML = '';
   document.getElementById('teamContainer').innerHTML = '';
+  weaponHandlers = [];
   pieceHandlers = [];
   teamHandlers = [];
-  populateSelectOptions(document.getElementById('uWeaponSelect'), 'weapon');
+  addWeaponRow();
   buildDialog.showModal();
 }));
 document.getElementById('buildCancel').addEventListener('click', () => buildDialog.close());
 
 document.getElementById('buildSave').addEventListener('click', async () => {
+  const weapons = weaponHandlers.filter(Boolean).map(h => ({ name:h.getName(), stats:h.getStats(), notes:h.getNotes(), image:h.getImage() })).filter(w => w.name || w.image || w.stats);
   const pieces = pieceHandlers.filter(Boolean).map(h => ({ name:h.getName(), stats:h.getStats(), notes:h.getNotes(), image:h.getImage() }));
   const team = teamHandlers.filter(Boolean).map(h => ({ name:h.getName(), notes:h.getNotes(), image:h.getImage() }));
   const payload = {
     game: document.getElementById('uGame').value,
     name: document.getElementById('uName').value.trim() || 'Personaje sin nombre',
     portrait: uPortrait.get(),
-    weaponName: document.getElementById('uWeaponName').value.trim(),
-    weaponImage: uWeapon.get(),
-    weaponStats: document.getElementById('uWeaponStats').value.trim(),
-    weaponNotes: document.getElementById('uWeaponNotes').value.trim(),
+    weapons,
+    targetStats: document.getElementById('uTargetStats').value.trim(),
     pieces,
     team,
     notes: document.getElementById('uNotes').value.trim()
@@ -1034,17 +1128,25 @@ document.addEventListener('click', (e) => {
     document.getElementById('buildDialogTitle').textContent = 'Editar build';
     document.getElementById('uGame').value = u.game;
     document.getElementById('uName').value = u.name;
-    document.getElementById('uWeaponName').value = u.weaponName || '';
-    document.getElementById('uWeaponStats').value = u.weaponStats || '';
-    document.getElementById('uWeaponNotes').value = u.weaponNotes || '';
+    document.getElementById('uTargetStats').value = u.targetStats || '';
     document.getElementById('uNotes').value = u.notes || '';
     uPortrait.set(u.portrait);
-    uWeapon.set(u.weaponImage);
-    populateSelectOptions(document.getElementById('uWeaponSelect'), 'weapon');
+    document.getElementById('weaponsContainer').innerHTML = '';
     document.getElementById('piecesContainer').innerHTML = '';
     document.getElementById('teamContainer').innerHTML = '';
+    weaponHandlers = [];
     pieceHandlers = [];
     teamHandlers = [];
+    // Compatibilidad con builds viejas que tenían un único campo de arma
+    let weaponsList = u.weapons;
+    if(!weaponsList || weaponsList.length === 0){
+      if(u.weaponName || u.weaponImage || u.weaponStats){
+        weaponsList = [{ name:u.weaponName||'', image:u.weaponImage||'', stats:u.weaponStats||'', notes:u.weaponNotes||'' }];
+      } else {
+        weaponsList = [];
+      }
+    }
+    if(weaponsList.length === 0){ addWeaponRow(); } else { weaponsList.forEach(w => addWeaponRow(w)); }
     (u.pieces||[]).forEach(p => addPieceRow(p));
     (u.team||[]).forEach(t => addTeamRow(t));
     buildDialog.showModal();
