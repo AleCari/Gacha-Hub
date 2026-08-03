@@ -88,7 +88,7 @@
 
   .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:18px; }
   #gridActive, #gridUpcoming{ grid-template-columns: 1fr; max-width: 750px; margin: 0 auto; }
-  #gridBuilds{ grid-template-columns: repeat(auto-fill, minmax(380px,1fr)); gap:26px; }
+  #gridBuilds{ grid-template-columns: repeat(auto-fill, minmax(460px,1fr)); gap:24px; }
 
   .card{
     background:var(--card); border:1px solid var(--edge); border-radius:16px; overflow:hidden; position:relative;
@@ -118,12 +118,22 @@
   }
   .icon-btn:hover{ color:var(--ink); border-color:var(--gold); }
 
-  /* Build cards — más grandes */
+  /* Build cards — más anchas, con vista de detalle al hacer click */
+  .build-card{ cursor:pointer; transition:border-color .15s, transform .15s; }
+  .build-card:hover{ border-color:var(--gold); }
   .build-card .card-img{ aspect-ratio: 3 / 4; max-height:460px; }
-  .build-card .card-body{ padding:26px; }
-  .build-card h3{ font-size:1.5rem; margin-bottom:12px; }
+  .build-card .card-body{ padding:22px; }
+  .build-card h3{ font-size:1.4rem; margin-bottom:10px; }
   .build-card .section-label{ font-family:'JetBrains Mono', monospace; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--gold); margin:14px 0 6px; }
-  .team-avatars{ display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+  @media (min-width:640px){
+    .build-card{ display:grid; grid-template-columns:220px 1fr; align-items:stretch; }
+    .build-card .card-img{ aspect-ratio:unset; height:100%; max-height:none; min-height:260px; }
+  }
+  .view-detail-hint{ font-family:'JetBrains Mono', monospace; font-size:.66rem; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; margin-top:10px; display:inline-flex; align-items:center; gap:5px; }
+  .build-card:hover .view-detail-hint{ color:var(--gold); }
+
+  .team-block-label{ font-family:'JetBrains Mono', monospace; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--purple); margin:12px 0 6px; }
+  .team-avatars{ display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; margin-bottom:10px; }
   .team-avatar{ text-align:center; width:64px; }
   .team-avatar .img{ width:56px; height:56px; border-radius:10px; background-size:cover; background-position:center; background-color:#1c1530; margin:0 auto 4px; border:1px solid var(--edge); }
   .team-avatar .lbl{ font-size:.68rem; color:var(--dim); line-height:1.2; }
@@ -139,6 +149,35 @@
   .target-stats .stat-line{ margin-bottom:5px; }
   .target-stats .stat-line:last-child{ margin-bottom:0; }
   .target-stats .stat-line b{ color:var(--ink); }
+
+  /* ===== Detalle de build (modal grande) ===== */
+  #buildDetailDialog{ width:min(880px,95vw); max-height:92vh; }
+  #buildDetailDialog .dialog-inner{ max-height:92vh; padding:0; }
+  .detail-close-row{ display:flex; justify-content:flex-end; padding:14px 14px 0; }
+  .detail-close-btn{ background:transparent; border:1px solid var(--edge); color:var(--dim); border-radius:8px; width:32px; height:32px; cursor:pointer; font-size:1rem; }
+  .detail-close-btn:hover{ color:var(--ink); border-color:var(--gold); }
+  .detail-hero{ width:100%; aspect-ratio:16/8; background-size:cover; background-position:center; background-color:#1c1530; }
+  .detail-body{ padding:8px 28px 28px; }
+  .detail-body h2{ font-family:'Zen Dots'; font-weight:400; font-size:1.7rem; margin:6px 0 14px; }
+  .detail-actions{ display:flex; gap:8px; margin-top:20px; padding-top:16px; border-top:1px solid var(--edge); }
+
+  /* ===== Administración de equipos (cuadros por miembro, agrupados en equipos con nombre) ===== */
+  .teams-container{ display:flex; flex-direction:column; gap:14px; }
+  .team-block{ border:1px solid var(--edge); border-radius:10px; padding:12px; position:relative; background:rgba(255,255,255,.02); }
+  .team-block .remove-team-block{ position:absolute; top:8px; right:8px; background:none; border:none; color:var(--dim); cursor:pointer; font-size:.9rem; }
+  .team-name-input{ font-family:'JetBrains Mono', monospace; font-weight:700; font-size:.82rem; width:calc(100% - 34px); margin-bottom:10px; padding:8px 10px; border-radius:7px; border:1px solid var(--edge); background:#1c1530; color:var(--gold); }
+  .team-name-input:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+  .team-slots{ display:flex; flex-wrap:wrap; gap:10px; align-items:flex-start; }
+  .team-slot{ width:96px; position:relative; border:1px solid var(--edge); border-radius:9px; padding:6px; background:#1c1530; }
+  .team-slot .remove-slot{ position:absolute; top:-8px; right:-8px; background:var(--card); border:1px solid var(--edge); color:var(--dim); cursor:pointer; font-size:.65rem; width:20px; height:20px; border-radius:50%; line-height:1; }
+  .team-slot .remove-slot:hover{ color:var(--gold); border-color:var(--gold); }
+  .slot-thumb-btn{ width:100%; aspect-ratio:1/1; border-radius:7px; background-size:cover; background-position:center; background-color:#140f1f; border:1px dashed var(--edge); display:flex; align-items:center; justify-content:center; color:var(--dim); font-size:1.1rem; cursor:pointer; margin-bottom:6px; }
+  .slot-thumb-btn:hover{ border-color:var(--gold); }
+  .slot-thumb-btn.has-img{ border-style:solid; }
+  .team-slot .slot-name{ width:100%; font-size:.68rem; padding:4px 5px; border-radius:5px; border:1px solid var(--edge); background:#140f1f; color:var(--ink); text-align:center; margin-bottom:4px; }
+  .team-slot .slot-notes{ width:100%; font-size:.62rem; padding:3px 5px; border-radius:5px; border:1px solid var(--edge); background:#140f1f; color:var(--dim); text-align:center; }
+  .add-slot-btn{ width:96px; aspect-ratio:1/1; border-radius:9px; border:1px dashed var(--edge); background:transparent; color:var(--dim); cursor:pointer; font-size:1.6rem; align-self:flex-start; }
+  .add-slot-btn:hover{ border-color:var(--gold); color:var(--gold); }
 
   .empty{ grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--dim); border:1px dashed var(--edge); border-radius:16px; }
 
@@ -373,9 +412,9 @@
     </div>
 
     <div class="subsection">
-      <div class="subsection-title">Equipo recomendado</div>
-      <div id="teamContainer"></div>
-      <button type="button" class="btn btn-ghost" id="addTeamBtn">+ agregar miembro</button>
+      <div class="subsection-title">Equipos recomendados <span style="color:var(--dim); text-transform:none; font-weight:400;">(podés armar más de un equipo, cada uno con su nombre y sus integrantes)</span></div>
+      <div id="teamsContainer" class="teams-container"></div>
+      <button type="button" class="btn btn-ghost" id="addTeamBlockBtn" style="margin-top:12px;">+ agregar equipo</button>
     </div>
 
     <div class="field"><label>Notas generales de la build</label><textarea id="uNotes" placeholder="stats objetivo, prioridad de sub-stats, rotación..."></textarea></div>
@@ -384,6 +423,15 @@
       <button class="btn btn-ghost" id="buildCancel">Cancelar</button>
       <button class="btn btn-primary" id="buildSave">Guardar</button>
     </div>
+  </div>
+</dialog>
+
+<!-- Build detail dialog (vista ampliada al hacer click en una build) -->
+<dialog id="buildDetailDialog">
+  <div class="dialog-inner">
+    <div class="detail-close-row"><button class="detail-close-btn" id="buildDetailClose">✕</button></div>
+    <div class="detail-hero" id="detailHero"></div>
+    <div class="detail-body" id="detailBody"></div>
   </div>
 </dialog>
 
@@ -679,6 +727,87 @@ function formatStatsBlock(text){
   }).join('');
 }
 
+// ====== BUILD RENDER HELPERS (compartidos entre la card y el detalle ampliado) ======
+function getWeaponsList(u){
+  // Compatibilidad: builds viejas guardaban un único campo de arma
+  let weaponsList = u.weapons;
+  if(!weaponsList || weaponsList.length === 0){
+    weaponsList = (u.weaponName || u.weaponImage || u.weaponStats)
+      ? [{ name:u.weaponName||'', image:u.weaponImage||'', stats:u.weaponStats||'', notes:u.weaponNotes||'' }]
+      : [];
+  }
+  return weaponsList;
+}
+
+function getTeamsList(u){
+  // Nuevo formato: u.teams = [{name, members:[...]}]. Compatibilidad con builds viejas: u.team = [miembros] (un solo equipo sin nombre).
+  if(u.teams && u.teams.length) return u.teams;
+  if(u.team && u.team.length) return [{ name:'', members:u.team }];
+  return [];
+}
+
+function buildWeaponHtml(u){
+  const weaponsList = getWeaponsList(u);
+  const mainWeapon = weaponsList[0];
+  const extraWeapons = weaponsList.slice(1);
+  if(!mainWeapon) return '';
+  return `
+    <div class="section-label">Arma</div>
+    <div class="weapon-primary">
+      ${mainWeapon.image ? `<div class="img" style="background-image:url(${mainWeapon.image});"></div>` : ''}
+      <div class="info">
+        <b>${escapeHtml(mainWeapon.name||'')}</b>
+        ${mainWeapon.notes ? `<div style="font-size:.8rem; color:var(--dim);">${escapeHtml(mainWeapon.notes)}</div>` : ''}
+        ${mainWeapon.stats ? `<div class="stats">${escapeHtml(mainWeapon.stats)}</div>` : ''}
+      </div>
+    </div>
+    ${extraWeapons.length ? `
+      <div class="weapon-extra-list">
+        ${extraWeapons.map(w => `
+          <div class="piece-line">
+            ${w.image ? `<div class="thumb" style="background-image:url(${w.image});"></div>` : ''}
+            <div style="font-size:.8rem; color:var(--dim);">
+              <b style="color:var(--ink)">${escapeHtml(w.name||'')}</b>${w.stats ? ' — '+escapeHtml(w.stats) : ''}${w.notes ? ' — '+escapeHtml(w.notes) : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+  `;
+}
+
+function buildPiecesHtml(u){
+  const piecesHtml = (u.pieces||[]).map(p => `
+    <div class="piece-line">
+      ${p.image ? `<div class="thumb" style="background-image:url(${p.image});"></div>` : ''}
+      <div style="font-size:.82rem; color:var(--dim);">
+        <b style="color:var(--ink)">${escapeHtml(p.name||'')}</b>${p.stats ? ' — '+escapeHtml(p.stats) : ''}${p.notes ? ' — '+escapeHtml(p.notes) : ''}
+      </div>
+    </div>
+  `).join('');
+  return piecesHtml ? `<div class="section-label">Piezas / discos</div>${piecesHtml}` : '';
+}
+
+function buildTeamsHtml(u){
+  const teams = getTeamsList(u);
+  if(!teams.length) return '';
+  return teams.map(team => `
+    ${team.name ? `<div class="team-block-label">${escapeHtml(team.name)}</div>` : `<div class="section-label">Equipo recomendado</div>`}
+    <div class="team-avatars">
+      ${(team.members||[]).map(t => `
+        <div class="team-avatar">
+          <div class="img" style="${t.image ? `background-image:url(${t.image});` : ''}"></div>
+          <div class="lbl">${escapeHtml(t.name||'')}${t.notes ? '<br>'+escapeHtml(t.notes) : ''}</div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function buildTargetStatsHtml(u){
+  return u.targetStats ? `<div class="target-stats">${formatStatsBlock(u.targetStats)}</div>` : '';
+}
+
 // ====== RENDER BUILDS ======
 function renderBuilds(){
   renderGameFilters('filtersBuilds', buildsData, 'builds');
@@ -691,63 +820,6 @@ function renderBuilds(){
   }
   filtered.forEach(u => {
     const game = GAMES[u.game] || { label:u.game, color:'var(--gold)' };
-    const piecesHtml = (u.pieces||[]).map(p => `
-      <div class="piece-line">
-        ${p.image ? `<div class="thumb" style="background-image:url(${p.image});"></div>` : ''}
-        <div style="font-size:.82rem; color:var(--dim);">
-          <b style="color:var(--ink)">${escapeHtml(p.name||'')}</b>${p.stats ? ' — '+escapeHtml(p.stats) : ''}${p.notes ? ' — '+escapeHtml(p.notes) : ''}
-        </div>
-      </div>
-    `).join('');
-
-    const teamHtml = (u.team||[]).length ? `
-      <div class="section-label">Equipo recomendado</div>
-      <div class="team-avatars">
-        ${(u.team||[]).map(t => `
-          <div class="team-avatar">
-            <div class="img" style="${t.image ? `background-image:url(${t.image});` : ''}"></div>
-            <div class="lbl">${escapeHtml(t.name||'')}${t.notes ? '<br>'+escapeHtml(t.notes) : ''}</div>
-          </div>
-        `).join('')}
-      </div>
-    ` : '';
-
-    // Compatibilidad: builds viejas guardaban un único campo de arma
-    let weaponsList = u.weapons;
-    if(!weaponsList || weaponsList.length === 0){
-      weaponsList = (u.weaponName || u.weaponImage || u.weaponStats)
-        ? [{ name:u.weaponName||'', image:u.weaponImage||'', stats:u.weaponStats||'', notes:u.weaponNotes||'' }]
-        : [];
-    }
-    const mainWeapon = weaponsList[0];
-    const extraWeapons = weaponsList.slice(1);
-
-    const weaponHtml = mainWeapon ? `
-      <div class="section-label">Arma</div>
-      <div class="weapon-primary">
-        ${mainWeapon.image ? `<div class="img" style="background-image:url(${mainWeapon.image});"></div>` : ''}
-        <div class="info">
-          <b>${escapeHtml(mainWeapon.name||'')}</b>
-          ${mainWeapon.notes ? `<div style="font-size:.8rem; color:var(--dim);">${escapeHtml(mainWeapon.notes)}</div>` : ''}
-          ${mainWeapon.stats ? `<div class="stats">${escapeHtml(mainWeapon.stats)}</div>` : ''}
-        </div>
-      </div>
-      ${extraWeapons.length ? `
-        <div class="weapon-extra-list">
-          ${extraWeapons.map(w => `
-            <div class="piece-line">
-              ${w.image ? `<div class="thumb" style="background-image:url(${w.image});"></div>` : ''}
-              <div style="font-size:.8rem; color:var(--dim);">
-                <b style="color:var(--ink)">${escapeHtml(w.name||'')}</b>${w.stats ? ' — '+escapeHtml(w.stats) : ''}${w.notes ? ' — '+escapeHtml(w.notes) : ''}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      ` : ''}
-    ` : '';
-
-    const targetStatsHtml = u.targetStats ? `<div class="target-stats">${formatStatsBlock(u.targetStats)}</div>` : '';
-
     const card = document.createElement('article');
     card.className = 'card build-card';
     card.innerHTML = `
@@ -755,19 +827,59 @@ function renderBuilds(){
       <div class="card-body">
         <span class="badge" style="--game-color:${game.color}">${game.label}</span>
         <h3>${escapeHtml(u.name)}</h3>
-        ${weaponHtml}
-        ${targetStatsHtml}
-        ${piecesHtml ? `<div class="section-label">Piezas / discos</div>${piecesHtml}` : ''}
-        ${teamHtml}
+        ${buildWeaponHtml(u)}
+        ${buildTargetStatsHtml(u)}
+        ${buildPiecesHtml(u)}
+        ${buildTeamsHtml(u)}
         ${u.notes ? `<p class="notes" style="margin-top:12px;">${escapeHtml(u.notes)}</p>` : ''}
+        <div class="view-detail-hint">⤢ Ver detalle completo</div>
         <div class="card-actions admin-only" style="display:${isAdmin?'flex':'none'}">
           <button class="icon-btn" data-edit-build="${u.id}">✎ Editar</button>
           <button class="icon-btn" data-del-build="${u.id}">✕ Eliminar</button>
         </div>
       </div>
     `;
+    card.addEventListener('click', (e) => {
+      if(e.target.closest('.icon-btn')) return;
+      openBuildDetail(u);
+    });
     grid.appendChild(card);
   });
+}
+
+// ====== BUILD DETAIL DIALOG ======
+const buildDetailDialog = document.getElementById('buildDetailDialog');
+document.getElementById('buildDetailClose').addEventListener('click', () => buildDetailDialog.close());
+
+function openBuildDetail(u){
+  const game = GAMES[u.game] || { label:u.game, color:'var(--gold)' };
+  document.getElementById('detailHero').style.backgroundImage = u.portrait ? `url(${u.portrait})` : 'none';
+  document.getElementById('detailBody').innerHTML = `
+    <span class="badge" style="--game-color:${game.color}">${game.label}</span>
+    <h2>${escapeHtml(u.name)}</h2>
+    ${buildWeaponHtml(u)}
+    ${buildTargetStatsHtml(u)}
+    ${buildPiecesHtml(u)}
+    ${buildTeamsHtml(u)}
+    ${u.notes ? `<p class="notes" style="margin-top:14px;">${escapeHtml(u.notes)}</p>` : ''}
+    <div class="detail-actions admin-only" style="display:${isAdmin?'flex':'none'}">
+      <button class="btn btn-ghost" id="detailEditBtn">✎ Editar esta build</button>
+      <button class="btn btn-ghost" id="detailDelBtn">✕ Eliminar</button>
+    </div>
+  `;
+  const editBtn = document.getElementById('detailEditBtn');
+  if(editBtn) editBtn.addEventListener('click', () => {
+    buildDetailDialog.close();
+    document.querySelector(`[data-edit-build="${u.id}"]`)?.click();
+  });
+  const delBtn = document.getElementById('detailDelBtn');
+  if(delBtn) delBtn.addEventListener('click', () => {
+    if(confirm('¿Eliminar esta build?')){
+      db.collection('builds').doc(u.id).delete();
+      buildDetailDialog.close();
+    }
+  });
+  buildDetailDialog.showModal();
 }
 
 // ====== RENDER LIBRARY ======
@@ -1198,96 +1310,109 @@ function addPieceRow(existing){
 
 document.getElementById('addPieceBtn').addEventListener('click', () => addPieceRow());
 
-function addTeamRow(existing){
-  const container = document.getElementById('teamContainer');
-  const idx = teamHandlers.length;
-  const row = document.createElement('div');
-  row.className = 'team-row';
-  row.innerHTML = `
-    <button type="button" class="remove-team" data-idx="${idx}">✕</button>
-    <div class="field">
-      <button type="button" class="lib-pick-btn team-pick-btn">
-        <span class="lib-pick-thumb"></span>
-        <span class="lib-pick-label">Elegir de biblioteca (o cargar uno nuevo abajo)</span>
-        <span class="lib-pick-icon">🔍</span>
-      </button>
-    </div>
-    <div class="item-row-grid">
-      <div class="thumb-col">
-        <input type="file" class="team-file" accept="image/*" style="width:104px; font-size:.65rem;">
-        <div class="preview team-preview">sin imagen</div>
-      </div>
-      <div class="fields-col">
-        <div class="field"><label>Nombre del personaje</label><input class="team-name" placeholder="ej. Bennett, Yunli, Soukaku..."></div>
-        <div class="field"><label>Notas</label><input class="team-notes" placeholder="rol en el equipo, prioridad, etc."></div>
-      </div>
-    </div>
-    <button type="button" class="mini-save-btn team-save-lib">💾 Guardar en biblioteca</button>
+// Cada "team block" es un equipo con nombre propio y una fila de cuadros (slots) para sus integrantes.
+// Los slots se acomodan con flexbox, así que 3, 4 o los que sean quedan bien acomodados sin espacios muertos.
+function addTeamSlot(slotsContainer, slotHandlers, existing){
+  const idx = slotHandlers.length;
+  const slot = document.createElement('div');
+  slot.className = 'team-slot';
+  slot.innerHTML = `
+    <button type="button" class="remove-slot">✕</button>
+    <div class="slot-thumb-btn"><span class="slot-plus">+</span></div>
+    <input type="file" class="slot-file" accept="image/*" style="display:none;">
+    <input class="slot-name" placeholder="Nombre">
+    <input class="slot-notes" placeholder="rol (opc.)">
   `;
-  container.appendChild(row);
+  slotsContainer.appendChild(slot);
 
-  const pickBtn = row.querySelector('.team-pick-btn');
-  const fileInput = row.querySelector('.team-file');
-  const preview = row.querySelector('.team-preview');
-  let teamData = existing ? existing.image || '' : '';
-  if(teamData){ preview.style.backgroundImage = `url(${teamData})`; preview.textContent=''; }
+  const thumbBtn = slot.querySelector('.slot-thumb-btn');
+  const fileInput = slot.querySelector('.slot-file');
+  const nameInput = slot.querySelector('.slot-name');
+  let slotImg = existing ? existing.image || '' : '';
 
-  function applyPicked(item){
-    row.querySelector('.team-name').value = item.name || '';
-    teamData = item.image || '';
-    preview.style.backgroundImage = teamData ? `url(${teamData})` : 'none';
-    preview.textContent = teamData ? '' : 'sin imagen';
-    updatePickBtn();
+  function refreshThumb(){
+    if(slotImg){
+      thumbBtn.style.backgroundImage = `url(${slotImg})`;
+      thumbBtn.innerHTML = '';
+      thumbBtn.classList.add('has-img');
+    } else {
+      thumbBtn.style.backgroundImage = 'none';
+      thumbBtn.innerHTML = '<span class="slot-plus">+</span>';
+      thumbBtn.classList.remove('has-img');
+    }
   }
 
-  function updatePickBtn(){
-    const thumb = pickBtn.querySelector('.lib-pick-thumb');
-    const label = pickBtn.querySelector('.lib-pick-label');
-    const name = row.querySelector('.team-name').value.trim();
-    thumb.style.backgroundImage = teamData ? `url(${teamData})` : 'none';
-    if(name){ label.textContent = name; pickBtn.classList.add('has-selection'); }
-    else { label.textContent = 'Elegir de biblioteca (o cargar uno nuevo abajo)'; pickBtn.classList.remove('has-selection'); }
-  }
-
-  pickBtn.addEventListener('click', () => {
-    openLibraryPicker('character', () => document.getElementById('uGame').value, applyPicked);
+  thumbBtn.addEventListener('click', () => {
+    openLibraryPicker('character', () => document.getElementById('uGame').value, (item) => {
+      nameInput.value = item.name || '';
+      slotImg = item.image || '';
+      refreshThumb();
+    });
   });
+  // doble click / long usage: click derecho no aplica en mobile, así que agregamos un pequeño acceso para subir imagen propia
+  thumbBtn.addEventListener('contextmenu', (e) => { e.preventDefault(); fileInput.click(); });
 
   fileInput.addEventListener('change', async () => {
     const file = fileInput.files[0];
     if(!file) return;
-    preview.textContent = 'procesando...';
-    teamData = await compressImage(file, 500, 0.7);
-    preview.style.backgroundImage = `url(${teamData})`;
-    preview.textContent = '';
-    updatePickBtn();
+    slotImg = await compressImage(file, 400, 0.7);
+    refreshThumb();
   });
 
-  row.querySelector('.team-name').addEventListener('input', updatePickBtn);
+  if(existing){ nameInput.value = existing.name || ''; slot.querySelector('.slot-notes').value = existing.notes || ''; }
+  refreshThumb();
 
-  if(existing){
-    row.querySelector('.team-name').value = existing.name || '';
-    row.querySelector('.team-notes').value = existing.notes || '';
-  }
-  updatePickBtn();
-
-  row.querySelector('.remove-team').addEventListener('click', () => {
-    row.remove();
-    teamHandlers[idx] = null;
+  slot.querySelector('.remove-slot').addEventListener('click', () => {
+    slot.remove();
+    slotHandlers[idx] = null;
   });
 
-  row.querySelector('.team-save-lib').addEventListener('click', () => {
-    saveToLibrary('character', row.querySelector('.team-name').value.trim(), teamData, '');
-  });
-
-  teamHandlers[idx] = {
-    getName: () => row.querySelector('.team-name').value.trim(),
-    getNotes: () => row.querySelector('.team-notes').value.trim(),
-    getImage: () => teamData
+  slotHandlers[idx] = {
+    getName: () => nameInput.value.trim(),
+    getNotes: () => slot.querySelector('.slot-notes').value.trim(),
+    getImage: () => slotImg
   };
 }
 
-document.getElementById('addTeamBtn').addEventListener('click', () => addTeamRow());
+function addTeamBlock(existingTeam){
+  const container = document.getElementById('teamsContainer');
+  const blockIdx = teamHandlers.length;
+  const block = document.createElement('div');
+  block.className = 'team-block';
+  block.innerHTML = `
+    <button type="button" class="remove-team-block">✕</button>
+    <input class="team-name-input" placeholder="Nombre del equipo (ej. Hipercarry, Sustain...)">
+    <div class="team-slots"></div>
+    <button type="button" class="add-slot-btn" title="agregar integrante">+</button>
+  `;
+  container.appendChild(block);
+
+  const slotsContainer = block.querySelector('.team-slots');
+  const addSlotBtn = block.querySelector('.add-slot-btn');
+  const nameInput = block.querySelector('.team-name-input');
+  let slotHandlers = [];
+
+  addSlotBtn.addEventListener('click', () => addTeamSlot(slotsContainer, slotHandlers));
+
+  if(existingTeam){
+    nameInput.value = existingTeam.name || '';
+    (existingTeam.members||[]).forEach(m => addTeamSlot(slotsContainer, slotHandlers, m));
+  } else {
+    addTeamSlot(slotsContainer, slotHandlers);
+  }
+
+  block.querySelector('.remove-team-block').addEventListener('click', () => {
+    block.remove();
+    teamHandlers[blockIdx] = null;
+  });
+
+  teamHandlers[blockIdx] = {
+    getName: () => nameInput.value.trim(),
+    getMembers: () => slotHandlers.filter(Boolean).map(h => ({ name:h.getName(), notes:h.getNotes(), image:h.getImage() })).filter(m => m.name || m.image)
+  };
+}
+
+document.getElementById('addTeamBlockBtn').addEventListener('click', () => addTeamBlock());
 
 document.querySelectorAll('[data-open="build"]').forEach(btn => btn.addEventListener('click', () => {
   editingBuildId = null;
@@ -1299,11 +1424,12 @@ document.querySelectorAll('[data-open="build"]').forEach(btn => btn.addEventList
   uPortrait.reset();
   document.getElementById('weaponsContainer').innerHTML = '';
   document.getElementById('piecesContainer').innerHTML = '';
-  document.getElementById('teamContainer').innerHTML = '';
+  document.getElementById('teamsContainer').innerHTML = '';
   weaponHandlers = [];
   pieceHandlers = [];
   teamHandlers = [];
   addWeaponRow();
+  addTeamBlock();
   buildDialog.showModal();
 }));
 document.getElementById('buildCancel').addEventListener('click', () => buildDialog.close());
@@ -1311,7 +1437,7 @@ document.getElementById('buildCancel').addEventListener('click', () => buildDial
 document.getElementById('buildSave').addEventListener('click', async () => {
   const weapons = weaponHandlers.filter(Boolean).map(h => ({ name:h.getName(), stats:h.getStats(), notes:h.getNotes(), image:h.getImage() })).filter(w => w.name || w.image || w.stats);
   const pieces = pieceHandlers.filter(Boolean).map(h => ({ name:h.getName(), stats:h.getStats(), notes:h.getNotes(), image:h.getImage() }));
-  const team = teamHandlers.filter(Boolean).map(h => ({ name:h.getName(), notes:h.getNotes(), image:h.getImage() }));
+  const teams = teamHandlers.filter(Boolean).map(h => ({ name:h.getName(), members:h.getMembers() })).filter(t => t.name || t.members.length);
   const payload = {
     game: document.getElementById('uGame').value,
     name: document.getElementById('uName').value.trim() || 'Personaje sin nombre',
@@ -1319,12 +1445,13 @@ document.getElementById('buildSave').addEventListener('click', async () => {
     weapons,
     targetStats: document.getElementById('uTargetStats').value.trim(),
     pieces,
-    team,
+    teams,
     notes: document.getElementById('uNotes').value.trim()
   };
   try{
     if(editingBuildId){
-      await db.collection('builds').doc(editingBuildId).update(payload);
+      // limpia el campo viejo "team" (formato anterior) si existía, ya migramos a "teams"
+      await db.collection('builds').doc(editingBuildId).update({ ...payload, team: firebase.firestore.FieldValue.delete() });
     } else {
       await db.collection('builds').add(payload);
     }
@@ -1345,7 +1472,7 @@ document.addEventListener('click', (e) => {
     uPortrait.set(u.portrait);
     document.getElementById('weaponsContainer').innerHTML = '';
     document.getElementById('piecesContainer').innerHTML = '';
-    document.getElementById('teamContainer').innerHTML = '';
+    document.getElementById('teamsContainer').innerHTML = '';
     weaponHandlers = [];
     pieceHandlers = [];
     teamHandlers = [];
@@ -1360,7 +1487,8 @@ document.addEventListener('click', (e) => {
     }
     if(weaponsList.length === 0){ addWeaponRow(); } else { weaponsList.forEach(w => addWeaponRow(w)); }
     (u.pieces||[]).forEach(p => addPieceRow(p));
-    (u.team||[]).forEach(t => addTeamRow(t));
+    const teamsList = getTeamsList(u);
+    if(teamsList.length === 0){ addTeamBlock(); } else { teamsList.forEach(t => addTeamBlock(t)); }
     buildDialog.showModal();
   }
   if(e.target.dataset.delBuild){
