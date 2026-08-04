@@ -118,48 +118,60 @@
   }
   .icon-btn:hover{ color:var(--ink); border-color:var(--gold); }
 
-  /* Build cards — más anchas, con vista de detalle al hacer click */
+  /* Build cards — imagen arriba (como antes), con vista de detalle al hacer click */
   .build-card{ cursor:pointer; transition:border-color .15s, transform .15s; }
   .build-card:hover{ border-color:var(--gold); }
-  .build-card .card-img{ aspect-ratio: 3 / 4; max-height:460px; }
-  .build-card .card-body{ padding:22px; }
-  .build-card h3{ font-size:1.4rem; margin-bottom:10px; }
-  .build-card .section-label{ font-family:'JetBrains Mono', monospace; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--gold); margin:14px 0 6px; }
-  @media (min-width:640px){
-    .build-card{ display:grid; grid-template-columns:220px 1fr; align-items:stretch; }
-    .build-card .card-img{ aspect-ratio:unset; height:100%; max-height:none; min-height:260px; }
-  }
-  .view-detail-hint{ font-family:'JetBrains Mono', monospace; font-size:.66rem; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; margin-top:10px; display:inline-flex; align-items:center; gap:5px; }
+  .build-card .card-img{ aspect-ratio: 3 / 4; max-height:520px; }
+  .build-card .card-body{ padding:24px; }
+  .build-card h3{ font-size:1.5rem; margin-bottom:12px; }
+  .build-card .section-label{ font-family:'JetBrains Mono', monospace; font-size:.74rem; text-transform:uppercase; letter-spacing:.05em; color:var(--gold); margin:16px 0 8px; }
+  .view-detail-hint{ font-family:'JetBrains Mono', monospace; font-size:.68rem; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; margin-top:12px; display:inline-flex; align-items:center; gap:5px; }
   .build-card:hover .view-detail-hint{ color:var(--gold); }
 
-  .team-block-label{ font-family:'JetBrains Mono', monospace; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--purple); margin:12px 0 6px; }
-  .team-avatars{ display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; margin-bottom:10px; }
-  .team-avatar{ text-align:center; width:64px; }
-  .team-avatar .img{ width:56px; height:56px; border-radius:10px; background-size:cover; background-position:center; background-color:#1c1530; margin:0 auto 4px; border:1px solid var(--edge); }
-  .team-avatar .lbl{ font-size:.68rem; color:var(--dim); line-height:1.2; }
-  .piece-line{ display:flex; gap:10px; align-items:flex-start; margin-bottom:8px; }
-  .piece-line .thumb{ width:38px; height:38px; border-radius:7px; background-size:cover; background-position:center; flex-shrink:0; background-color:#1c1530; border:1px solid var(--edge); }
+  .team-block-label{ font-family:'JetBrains Mono', monospace; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--purple); margin:14px 0 8px; }
+  .team-avatars{ display:flex; gap:12px; flex-wrap:wrap; margin-top:6px; margin-bottom:12px; }
+  .team-avatar{ text-align:center; width:84px; }
+  .team-avatar .img{ width:76px; height:76px; border-radius:12px; background-size:cover; background-position:center; background-color:#1c1530; margin:0 auto 5px; border:1px solid var(--edge); }
+  .team-avatar .lbl{ font-size:.74rem; color:var(--dim); line-height:1.25; }
+  .piece-line{ display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
+  .piece-line .thumb{ width:50px; height:50px; border-radius:9px; background-size:cover; background-position:center; flex-shrink:0; background-color:#1c1530; border:1px solid var(--edge); }
+  .piece-line > div{ font-size:.86rem !important; }
 
-  .weapon-primary{ display:flex; gap:14px; align-items:flex-start; margin-bottom:10px; }
-  .weapon-primary .img{ width:96px; height:96px; border-radius:12px; background-size:cover; background-position:center; background-color:#1c1530; border:1px solid var(--edge); flex-shrink:0; }
-  .weapon-primary .info b{ font-size:1.02rem; display:block; margin-bottom:3px; }
-  .weapon-primary .info .stats{ font-size:.8rem; color:var(--dim); margin-top:4px; line-height:1.5; }
-  .weapon-extra-list{ margin-bottom:6px; }
-  .target-stats{ font-size:.82rem; color:var(--dim); line-height:1.6; background:rgba(255,255,255,.03); border:1px solid var(--edge); border-radius:8px; padding:10px 12px; margin:8px 0 14px; }
-  .target-stats .stat-line{ margin-bottom:5px; }
+  .weapon-primary{ display:flex; gap:16px; align-items:flex-start; margin-bottom:12px; }
+  .weapon-primary .img{ width:128px; height:128px; border-radius:14px; background-size:cover; background-position:center; background-color:#1c1530; border:1px solid var(--edge); flex-shrink:0; }
+  .weapon-primary .info b{ font-size:1.1rem; display:block; margin-bottom:4px; }
+  .weapon-primary .info .stats{ font-size:.85rem; color:var(--dim); margin-top:5px; line-height:1.55; }
+  .weapon-extra-list{ margin-bottom:8px; }
+  .target-stats{ font-size:.86rem; color:var(--dim); line-height:1.65; background:rgba(255,255,255,.03); border:1px solid var(--edge); border-radius:8px; padding:12px 14px; margin:10px 0 16px; }
+  .target-stats .stat-line{ margin-bottom:6px; }
   .target-stats .stat-line:last-child{ margin-bottom:0; }
   .target-stats .stat-line b{ color:var(--ink); }
 
-  /* ===== Detalle de build (modal grande) ===== */
-  #buildDetailDialog{ width:min(880px,95vw); max-height:92vh; }
-  #buildDetailDialog .dialog-inner{ max-height:92vh; padding:0; }
+  /* ===== Detalle de build (modal grande, todo más grande y legible) ===== */
+  #buildDetailDialog{ width:min(920px,96vw); max-height:94vh; }
+  #buildDetailDialog .dialog-inner{ max-height:94vh; padding:0; }
   .detail-close-row{ display:flex; justify-content:flex-end; padding:14px 14px 0; }
-  .detail-close-btn{ background:transparent; border:1px solid var(--edge); color:var(--dim); border-radius:8px; width:32px; height:32px; cursor:pointer; font-size:1rem; }
+  .detail-close-btn{ background:transparent; border:1px solid var(--edge); color:var(--dim); border-radius:8px; width:34px; height:34px; cursor:pointer; font-size:1.05rem; }
   .detail-close-btn:hover{ color:var(--ink); border-color:var(--gold); }
-  .detail-hero{ width:100%; aspect-ratio:16/8; background-size:cover; background-position:center; background-color:#1c1530; }
-  .detail-body{ padding:8px 28px 28px; }
-  .detail-body h2{ font-family:'Zen Dots'; font-weight:400; font-size:1.7rem; margin:6px 0 14px; }
-  .detail-actions{ display:flex; gap:8px; margin-top:20px; padding-top:16px; border-top:1px solid var(--edge); }
+  .detail-hero{ width:100%; aspect-ratio:4/3; max-height:560px; background-size:cover; background-position:center; background-color:#1c1530; }
+  @media (min-width:720px){ .detail-hero{ aspect-ratio:16/9; max-height:480px; } }
+  .detail-body{ padding:10px 32px 32px; font-size:1.02rem; }
+  .detail-body h2{ font-family:'Zen Dots'; font-weight:400; font-size:2.1rem; margin:10px 0 18px; }
+  .detail-body .badge{ font-size:.78rem; padding:5px 14px; }
+  .detail-body .section-label{ font-size:.85rem; margin:20px 0 10px; }
+  .detail-body .team-block-label{ font-size:.82rem; margin:20px 0 10px; }
+  .detail-body .weapon-primary .img{ width:170px; height:170px; border-radius:16px; }
+  .detail-body .weapon-primary .info b{ font-size:1.3rem; }
+  .detail-body .weapon-primary .info .stats{ font-size:.95rem; line-height:1.65; }
+  .detail-body .piece-line .thumb{ width:64px; height:64px; border-radius:11px; }
+  .detail-body .piece-line > div{ font-size:.95rem !important; }
+  .detail-body .team-avatar{ width:104px; }
+  .detail-body .team-avatar .img{ width:96px; height:96px; border-radius:14px; }
+  .detail-body .team-avatar .lbl{ font-size:.82rem; }
+  .detail-body .target-stats{ font-size:.95rem; padding:16px 18px; }
+  .detail-body .notes{ font-size:.98rem; line-height:1.7; }
+  .detail-body .notes-label{ font-family:'JetBrains Mono', monospace; font-size:.85rem; text-transform:uppercase; letter-spacing:.05em; color:var(--gold); margin:20px 0 8px; }
+  .detail-actions{ display:flex; gap:8px; margin-top:24px; padding-top:18px; border-top:1px solid var(--edge); }
 
   /* ===== Administración de equipos (cuadros por miembro, agrupados en equipos con nombre) ===== */
   .teams-container{ display:flex; flex-direction:column; gap:14px; }
@@ -861,7 +873,7 @@ function openBuildDetail(u){
     ${buildTargetStatsHtml(u)}
     ${buildPiecesHtml(u)}
     ${buildTeamsHtml(u)}
-    ${u.notes ? `<p class="notes" style="margin-top:14px;">${escapeHtml(u.notes)}</p>` : ''}
+    ${u.notes ? `<div class="notes-label">Notas generales</div><p class="notes">${escapeHtml(u.notes)}</p>` : ''}
     <div class="detail-actions admin-only" style="display:${isAdmin?'flex':'none'}">
       <button class="btn btn-ghost" id="detailEditBtn">✎ Editar esta build</button>
       <button class="btn btn-ghost" id="detailDelBtn">✕ Eliminar</button>
