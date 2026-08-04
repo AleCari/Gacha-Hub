@@ -26,6 +26,11 @@
   body::before{
     content:''; position:fixed; inset:0; background:var(--overlay-bg); z-index:0; pointer-events:none;
   }
+  body::after{
+    content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:radial-gradient(ellipse at 50% 0%, var(--tint-color, transparent) 0%, transparent 60%);
+    opacity:var(--tint-opacity, 0); transition:opacity .5s ease, background .3s ease;
+  }
   #app{ position:relative; z-index:1; }
 
   .admin-pill{
@@ -92,17 +97,31 @@
 
   .card{
     background:var(--card); border:1px solid var(--edge); border-radius:16px; overflow:hidden; position:relative;
+    transition:transform .18s ease, border-color .15s ease, box-shadow .2s ease;
+  }
+  .card{ border-left:4px solid var(--game-color, var(--edge)); }
+  .card:hover{
+    transform:translateY(-4px);
+    border-color:var(--game-color, var(--gold));
+    box-shadow:0 16px 30px -14px rgba(0,0,0,.6), 0 0 0 1px color-mix(in srgb, var(--game-color, var(--gold)) 35%, transparent);
   }
   .card-img{
     width:100%; aspect-ratio: 16 / 7; height:auto; max-height:300px; background-size:cover; background-position:center;
     background-color:var(--bg-alt, #1c1530); display:flex; align-items:center; justify-content:center;
     color:var(--dim); font-family:'JetBrains Mono', monospace; font-size:.7rem;
+    transition:transform .35s ease;
   }
+  .card:hover .card-img{ transform:scale(1.045); }
   .card-body{ padding:18px; }
   .badge{
-    display:inline-block; font-family:'JetBrains Mono', monospace; font-size:.66rem; letter-spacing:.08em;
-    text-transform:uppercase; padding:3px 10px; border-radius:20px; border:1px solid var(--game-color, var(--gold));
+    display:inline-flex; align-items:center; gap:6px; font-family:'JetBrains Mono', monospace; font-size:.66rem; letter-spacing:.08em;
+    text-transform:uppercase; padding:3px 10px 3px 3px; border-radius:20px; border:1px solid var(--game-color, var(--gold));
     color:var(--game-color, var(--gold)); margin-bottom:10px;
+  }
+  .game-icon{
+    display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%;
+    background:var(--game-color, var(--gold)); color:#140f1f; font-size:.56rem; font-weight:800; letter-spacing:0;
+    font-family:'JetBrains Mono', monospace;
   }
   .card h3{ font-family:'Zen Dots'; font-weight:400; font-size:1.05rem; margin:0 0 8px; }
   .card .notes{ font-size:.85rem; color:var(--dim); line-height:1.5; margin:0 0 12px; }
@@ -118,9 +137,21 @@
   }
   .icon-btn:hover{ color:var(--ink); border-color:var(--gold); }
 
+  /* Tooltip rápido con stats al pasar el mouse sobre miniaturas de arma/pieza */
+  [data-tip]{ position:relative; }
+  [data-tip]:hover::after{
+    content:attr(data-tip); position:absolute; bottom:calc(100% + 9px); left:0; transform:none;
+    background:#0c0912; color:var(--ink); border:1px solid var(--edge); border-radius:9px;
+    padding:9px 12px; font-size:.74rem; line-height:1.5; white-space:pre-line; width:max-content; max-width:220px;
+    box-shadow:0 10px 24px -8px rgba(0,0,0,.7); z-index:30; pointer-events:none; font-family:'Manrope', sans-serif;
+  }
+  [data-tip]:hover::before{
+    content:''; position:absolute; bottom:calc(100% + 3px); left:10px; border:6px solid transparent;
+    border-top-color:#0c0912; z-index:30; pointer-events:none;
+  }
+
   /* Build cards — imagen arriba (como antes), con vista de detalle al hacer click */
-  .build-card{ cursor:pointer; transition:border-color .15s, transform .15s; }
-  .build-card:hover{ border-color:var(--gold); }
+  .build-card{ cursor:pointer; }
   .build-card .card-img{ aspect-ratio: 3 / 4; max-height:520px; }
   .build-card .card-body{ padding:24px; }
   .build-card h3{ font-size:1.5rem; margin-bottom:12px; }
@@ -150,9 +181,16 @@
   /* ===== Detalle de build (modal grande, todo más grande y legible) ===== */
   #buildDetailDialog{ width:min(920px,96vw); max-height:94vh; }
   #buildDetailDialog .dialog-inner{ max-height:94vh; padding:0; }
-  .detail-close-row{ display:flex; justify-content:flex-end; padding:14px 14px 0; }
-  .detail-close-btn{ background:transparent; border:1px solid var(--edge); color:var(--dim); border-radius:8px; width:34px; height:34px; cursor:pointer; font-size:1.05rem; }
-  .detail-close-btn:hover{ color:var(--ink); border-color:var(--gold); }
+  .detail-close-row{
+    position:sticky; top:0; z-index:15; display:flex; justify-content:flex-end;
+    padding:14px 14px 0; pointer-events:none;
+  }
+  .detail-close-btn{
+    background:rgba(12,9,18,.7); backdrop-filter:blur(4px); border:1px solid var(--edge); color:var(--ink);
+    border-radius:8px; width:36px; height:36px; cursor:pointer; font-size:1.05rem; pointer-events:auto;
+    box-shadow:0 4px 14px -4px rgba(0,0,0,.6);
+  }
+  .detail-close-btn:hover{ color:#fff; border-color:var(--gold); }
   .detail-hero{ width:100%; aspect-ratio:4/3; max-height:560px; background-size:cover; background-position:center; background-color:#1c1530; }
   @media (min-width:720px){ .detail-hero{ aspect-ratio:16/9; max-height:480px; } }
   .detail-body{ padding:10px 32px 32px; font-size:1.02rem; }
@@ -551,12 +589,26 @@ document.getElementById('exitAdmin').addEventListener('click', () => {
 });
 
 // ====== GAME CONFIG ======
+// Nota: uso monogramas propios (no los logos oficiales de cada juego) para evitar temas de derechos de marca.
 const GAMES = {
-  genshin: { label: 'Genshin Impact', color: 'var(--gold)' },
-  hsr: { label: 'Honkai: Star Rail', color: 'var(--purple)' },
-  zzz: { label: 'Zenless Zone Zero', color: 'var(--blue)' },
-  uma: { label: 'Umamusume', color: 'var(--pink)' }
+  genshin: { label: 'Genshin Impact', color: 'var(--gold)', hex:'#f2c14e', icon:'GI' },
+  hsr: { label: 'Honkai: Star Rail', color: 'var(--purple)', hex:'#b98cea', icon:'HSR' },
+  zzz: { label: 'Zenless Zone Zero', color: 'var(--blue)', hex:'#6fa9e6', icon:'ZZZ' },
+  uma: { label: 'Umamusume', color: 'var(--pink)', hex:'#f28fc0', icon:'UMA' }
 };
+
+function getGameMeta(key){
+  return GAMES[key] || { label:key || 'Otro', color:'var(--gold)', hex:'#f2c14e', icon:(key||'??').slice(0,3).toUpperCase() };
+}
+
+function badgeHtml(key){
+  const g = getGameMeta(key);
+  return `<span class="badge" style="--game-color:${g.color}"><span class="game-icon">${escapeHtml(g.icon)}</span>${escapeHtml(g.label)}</span>`;
+}
+
+function tipAttr(text){
+  return text ? `data-tip="${escapeHtml(text)}"` : '';
+}
 
 const BG_PRESETS = [
   { id:'aubergine', label:'Aubergine', css:'radial-gradient(ellipse at 15% -10%, #2c2050 0%, transparent 55%), radial-gradient(ellipse at 90% 0%, #1a2a45 0%, transparent 45%), #140f1f' },
@@ -621,8 +673,23 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+    updateBgTint();
   });
 });
+
+// ====== TINTE DE FONDO SEGÚN EL JUEGO FILTRADO ======
+function updateBgTint(){
+  const activeTab = document.querySelector('.tab.active');
+  const key = activeTab ? activeTab.dataset.panel : 'active';
+  const gameKey = activeGameFilter[key];
+  if(gameKey){
+    const g = getGameMeta(gameKey);
+    document.body.style.setProperty('--tint-color', g.hex || '#f2c14e');
+    document.body.style.setProperty('--tint-opacity', '.16');
+  } else {
+    document.body.style.setProperty('--tint-opacity', '0');
+  }
+}
 
 // ====== COUNTDOWN ======
 function formatCountdown(ms){
@@ -672,14 +739,15 @@ function renderGameFilters(containerId, list, key){
   const allChip = document.createElement('button');
   allChip.className = 'chip' + (activeGameFilter[key]===null ? ' active':'');
   allChip.textContent = 'Todos';
-  allChip.addEventListener('click', () => { activeGameFilter[key]=null; renderBanners(); renderBuilds(); renderLibrary(); });
+  allChip.addEventListener('click', () => { activeGameFilter[key]=null; renderBanners(); renderBuilds(); renderLibrary(); updateBgTint(); });
   el.appendChild(allChip);
   gamesPresent.forEach(g => {
+    const meta = getGameMeta(g);
     const chip = document.createElement('button');
     chip.className = 'chip' + (activeGameFilter[key]===g ? ' active':'');
-    chip.style.setProperty('--chip-color', GAMES[g] ? GAMES[g].color : 'var(--gold)');
-    chip.textContent = GAMES[g] ? GAMES[g].label : g;
-    chip.addEventListener('click', () => { activeGameFilter[key]=g; renderBanners(); renderBuilds(); renderLibrary(); });
+    chip.style.setProperty('--chip-color', meta.color);
+    chip.textContent = meta.label;
+    chip.addEventListener('click', () => { activeGameFilter[key]=g; renderBanners(); renderBuilds(); renderLibrary(); updateBgTint(); });
     el.appendChild(chip);
   });
 }
@@ -694,15 +762,16 @@ function renderBannerGrid(gridId, filterId, list, mode){
     return;
   }
   filtered.forEach(b => {
-    const game = GAMES[b.game] || { label:b.game, color:'var(--gold)' };
+    const game = getGameMeta(b.game);
     const card = document.createElement('article');
     card.className = 'card';
+    card.style.setProperty('--game-color', game.color);
     const targetTime = mode==='active' ? b.end : b.start;
     const prefixText = mode==='active' ? 'Termina en ' : 'Empieza en ';
     card.innerHTML = `
       <div class="card-img" style="${b.image ? `background-image:url(${b.image})` : ''}">${b.image?'':'sin imagen'}</div>
       <div class="card-body">
-        <span class="badge" style="--game-color:${game.color}">${game.label}</span>
+        ${badgeHtml(b.game)}
         <h3>${escapeHtml(b.name)}</h3>
         <div class="countdown" style="--game-color:${game.color}" data-target="${targetTime}" data-prefix="${prefixText}">${prefixText}<b>calculando...</b></div>
         ${b.notes ? `<p class="notes">${escapeHtml(b.notes)}</p>` : ''}
@@ -763,10 +832,11 @@ function buildWeaponHtml(u){
   const mainWeapon = weaponsList[0];
   const extraWeapons = weaponsList.slice(1);
   if(!mainWeapon) return '';
+  const mainTip = [mainWeapon.name, mainWeapon.stats, mainWeapon.notes].filter(Boolean).join('\n');
   return `
     <div class="section-label">Arma</div>
     <div class="weapon-primary">
-      ${mainWeapon.image ? `<div class="img" style="background-image:url(${mainWeapon.image});"></div>` : ''}
+      ${mainWeapon.image ? `<div class="img" style="background-image:url(${mainWeapon.image});" ${tipAttr(mainTip)}></div>` : ''}
       <div class="info">
         <b>${escapeHtml(mainWeapon.name||'')}</b>
         ${mainWeapon.notes ? `<div style="font-size:.8rem; color:var(--dim);">${escapeHtml(mainWeapon.notes)}</div>` : ''}
@@ -775,28 +845,32 @@ function buildWeaponHtml(u){
     </div>
     ${extraWeapons.length ? `
       <div class="weapon-extra-list">
-        ${extraWeapons.map(w => `
+        ${extraWeapons.map(w => {
+          const tip = [w.name, w.stats, w.notes].filter(Boolean).join('\n');
+          return `
           <div class="piece-line">
-            ${w.image ? `<div class="thumb" style="background-image:url(${w.image});"></div>` : ''}
+            ${w.image ? `<div class="thumb" style="background-image:url(${w.image});" ${tipAttr(tip)}></div>` : ''}
             <div style="font-size:.8rem; color:var(--dim);">
               <b style="color:var(--ink)">${escapeHtml(w.name||'')}</b>${w.stats ? ' — '+escapeHtml(w.stats) : ''}${w.notes ? ' — '+escapeHtml(w.notes) : ''}
             </div>
           </div>
-        `).join('')}
+        `;}).join('')}
       </div>
     ` : ''}
   `;
 }
 
 function buildPiecesHtml(u){
-  const piecesHtml = (u.pieces||[]).map(p => `
+  const piecesHtml = (u.pieces||[]).map(p => {
+    const tip = [p.name, p.stats, p.notes].filter(Boolean).join('\n');
+    return `
     <div class="piece-line">
-      ${p.image ? `<div class="thumb" style="background-image:url(${p.image});"></div>` : ''}
+      ${p.image ? `<div class="thumb" style="background-image:url(${p.image});" ${tipAttr(tip)}></div>` : ''}
       <div style="font-size:.82rem; color:var(--dim);">
         <b style="color:var(--ink)">${escapeHtml(p.name||'')}</b>${p.stats ? ' — '+escapeHtml(p.stats) : ''}${p.notes ? ' — '+escapeHtml(p.notes) : ''}
       </div>
     </div>
-  `).join('');
+  `;}).join('');
   return piecesHtml ? `<div class="section-label">Piezas / discos</div>${piecesHtml}` : '';
 }
 
@@ -831,13 +905,14 @@ function renderBuilds(){
     return;
   }
   filtered.forEach(u => {
-    const game = GAMES[u.game] || { label:u.game, color:'var(--gold)' };
+    const game = getGameMeta(u.game);
     const card = document.createElement('article');
     card.className = 'card build-card';
+    card.style.setProperty('--game-color', game.color);
     card.innerHTML = `
       <div class="card-img" style="${u.portrait ? `background-image:url(${u.portrait})` : ''}">${u.portrait?'':'sin retrato'}</div>
       <div class="card-body">
-        <span class="badge" style="--game-color:${game.color}">${game.label}</span>
+        ${badgeHtml(u.game)}
         <h3>${escapeHtml(u.name)}</h3>
         ${buildWeaponHtml(u)}
         ${buildTargetStatsHtml(u)}
@@ -864,10 +939,10 @@ const buildDetailDialog = document.getElementById('buildDetailDialog');
 document.getElementById('buildDetailClose').addEventListener('click', () => buildDetailDialog.close());
 
 function openBuildDetail(u){
-  const game = GAMES[u.game] || { label:u.game, color:'var(--gold)' };
+  const game = getGameMeta(u.game);
   document.getElementById('detailHero').style.backgroundImage = u.portrait ? `url(${u.portrait})` : 'none';
   document.getElementById('detailBody').innerHTML = `
-    <span class="badge" style="--game-color:${game.color}">${game.label}</span>
+    ${badgeHtml(u.game)}
     <h2>${escapeHtml(u.name)}</h2>
     ${buildWeaponHtml(u)}
     ${buildTargetStatsHtml(u)}
@@ -907,13 +982,14 @@ function renderLibrary(){
     return;
   }
   filtered.forEach(i => {
-    const game = GAMES[i.game] || { label:i.game, color:'var(--gold)' };
+    const game = getGameMeta(i.game);
     const card = document.createElement('article');
     card.className = 'card';
+    card.style.setProperty('--game-color', game.color);
     card.innerHTML = `
       <div class="card-img" style="${i.image ? `background-image:url(${i.image})` : ''}">${i.image?'':'sin imagen'}</div>
       <div class="card-body">
-        <span class="badge" style="--game-color:${game.color}">${game.label}</span>
+        ${badgeHtml(i.game)}
         <h3>${escapeHtml(i.name)}</h3>
         ${i.stats ? `<p class="notes">${escapeHtml(i.stats)}</p>` : ''}
         <div class="card-actions">
