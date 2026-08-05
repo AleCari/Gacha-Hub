@@ -500,6 +500,11 @@
     </div>
 
     <div class="field">
+      <label>Stats generales / principales del personaje <span style="color:var(--dim); text-transform:none; font-weight:400;">(solo se ve al abrir el detalle de la build, no en la vista previa)</span></label>
+      <textarea id="uGeneralStats" placeholder="Vida: 45000&#10;ATQ: 3200&#10;Daño crítico: 220%&#10;Prob. crítica: 95%" style="min-height:90px;"></textarea>
+    </div>
+
+    <div class="field">
       <label>Stats a buscar / objetivo <span style="color:var(--dim); text-transform:none; font-weight:400;">(un stat por línea, queda más ordenado)</span></label>
       <textarea id="uTargetStats" placeholder="Disco 4: Daño crítico / Prob. Crítico&#10;Disco 5: Ataque / Daño Físico&#10;Disco 6: Ataque&#10;Sub stats: Daño crítico, Prob. crítica, Ataque%" style="min-height:100px;"></textarea>
     </div>
@@ -1016,6 +1021,11 @@ function buildTargetStatsHtml(u){
   return u.targetStats ? `<div class="target-stats">${formatStatsBlock(u.targetStats)}</div>` : '';
 }
 
+function buildGeneralStatsHtml(u){
+  // Solo se usa en el detalle (no en la vista previa de la card)
+  return u.generalStats ? `<div class="section-label">Stats generales</div><div class="target-stats">${formatStatsBlock(u.generalStats)}</div>` : '';
+}
+
 // ====== RENDER BUILDS ======
 function renderBuilds(){
   renderGameFilters('filtersBuilds', buildsData, 'builds');
@@ -1096,6 +1106,7 @@ function openBuildDetail(u){
     ${badgeHtml(u.game, color)}
     <h2>${escapeHtml(u.name)}</h2>
     ${buildWeaponHtml(u, true)}
+    ${buildGeneralStatsHtml(u)}
     ${buildTargetStatsHtml(u)}
     ${buildPiecesHtml(u, true)}
     ${buildAbilitiesHtml(u)}
@@ -1803,6 +1814,7 @@ document.querySelectorAll('[data-open="build"]').forEach(btn => btn.addEventList
   document.getElementById('uGame').value = 'genshin';
   document.getElementById('uColor').value = getGameMeta('genshin').hex;
   document.getElementById('uName').value = '';
+  document.getElementById('uGeneralStats').value = '';
   document.getElementById('uTargetStats').value = '';
   document.getElementById('uNotes').value = '';
   uPortrait.reset();
@@ -1836,6 +1848,7 @@ document.getElementById('buildSave').addEventListener('click', async () => {
     portrait: uPortrait.get(),
     abilities,
     weapons,
+    generalStats: document.getElementById('uGeneralStats').value.trim(),
     targetStats: document.getElementById('uTargetStats').value.trim(),
     pieces,
     teams,
@@ -1861,6 +1874,7 @@ document.addEventListener('click', (e) => {
     document.getElementById('uGame').value = u.game;
     document.getElementById('uColor').value = itemColor(u);
     document.getElementById('uName').value = u.name;
+    document.getElementById('uGeneralStats').value = u.generalStats || '';
     document.getElementById('uTargetStats').value = u.targetStats || '';
     document.getElementById('uNotes').value = u.notes || '';
     uPortrait.set(u.portrait);
