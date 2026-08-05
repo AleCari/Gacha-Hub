@@ -1005,7 +1005,7 @@ function buildWeaponHtml(u, interactive){
   const mainWeapon = weaponsList[0];
   const extraWeapons = weaponsList.slice(1);
   if(!mainWeapon) return '';
-  const mainTip = [mainWeapon.name, mainWeapon.stats, mainWeapon.notes].filter(Boolean).join('\n');
+  const mainTip = [mainWeapon.name, mainWeapon.notes].filter(Boolean).join('\n');
   const mainClickAttrs = interactive ? `${dataItemAttr({ kind:'Arma', name:mainWeapon.name, image:mainWeapon.image, libraryId:mainWeapon.libraryId||'' })}` : '';
   return `
     <div class="section-label">Arma</div>
@@ -1014,20 +1014,19 @@ function buildWeaponHtml(u, interactive){
       <div class="info ${interactive?'clickable-item':''}" ${interactive ? mainClickAttrs : ''}>
         <b>${escapeHtml(mainWeapon.name||'')}</b>
         ${mainWeapon.notes ? `<div style="font-size:.8rem; color:var(--dim);">${escapeHtml(mainWeapon.notes)}</div>` : ''}
-        ${(!interactive && mainWeapon.stats) ? `<div class="stats">${escapeHtml(mainWeapon.stats)}</div>` : ''}
         ${(interactive && mainWeapon.stats) ? `<div class="click-hint">click para ver la descripción ⤢</div>` : ''}
       </div>
     </div>
     ${extraWeapons.length ? `
       <div class="weapon-extra-list">
         ${extraWeapons.map(w => {
-          const tip = [w.name, w.stats, w.notes].filter(Boolean).join('\n');
+          const tip = [w.name, w.notes].filter(Boolean).join('\n');
           const clickAttrs = interactive ? dataItemAttr({ kind:'Arma', name:w.name, image:w.image, libraryId:w.libraryId||'' }) : '';
           return `
           <div class="piece-line ${interactive?'clickable-item':''}" ${interactive ? clickAttrs : ''}>
             ${w.image ? `<div class="thumb" style="background-image:url(${w.image});" ${interactive ? '' : tipAttr(tip)}></div>` : ''}
             <div style="font-size:.8rem; color:var(--dim);">
-              <b style="color:var(--ink)">${escapeHtml(w.name||'')}</b>${w.notes ? ' — '+escapeHtml(w.notes) : ''}${(!interactive && w.stats) ? ' — '+escapeHtml(w.stats) : ''}
+              <b style="color:var(--ink)">${escapeHtml(w.name||'')}</b>${w.notes ? ' — '+escapeHtml(w.notes) : ''}
             </div>
           </div>
         `;}).join('')}
@@ -1038,13 +1037,13 @@ function buildWeaponHtml(u, interactive){
 
 function buildPiecesHtml(u, interactive){
   const piecesHtml = (u.pieces||[]).map(p => {
-    const tip = [p.name, p.stats, p.notes].filter(Boolean).join('\n');
+    const tip = [p.name, p.notes].filter(Boolean).join('\n');
     const clickAttrs = interactive ? dataItemAttr({ kind:'Pieza / disco', name:p.name, image:p.image, libraryId:p.libraryId||'' }) : '';
     return `
     <div class="piece-line ${interactive?'clickable-item':''}" ${interactive ? clickAttrs : ''}>
       ${p.image ? `<div class="thumb" style="background-image:url(${p.image});" ${interactive ? '' : tipAttr(tip)}></div>` : ''}
       <div style="font-size:.82rem; color:var(--dim);">
-        <b style="color:var(--ink)">${escapeHtml(p.name||'')}</b>${p.notes ? ' — '+escapeHtml(p.notes) : ''}${(!interactive && p.stats) ? ' — '+escapeHtml(p.stats) : ''}
+        <b style="color:var(--ink)">${escapeHtml(p.name||'')}</b>${p.notes ? ' — '+escapeHtml(p.notes) : ''}
       </div>
     </div>
   `;}).join('');
