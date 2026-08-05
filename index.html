@@ -181,6 +181,7 @@
   .abilities-row{ display:flex; gap:14px; flex-wrap:wrap; margin:8px 0 18px; }
   .ability-chip{ display:flex; flex-direction:column; align-items:center; gap:5px; background:rgba(255,255,255,.03); border:1px solid var(--edge); border-radius:11px; padding:12px 16px; min-width:92px; text-align:center; }
   .ability-priority-badge{ font-family:'JetBrains Mono', monospace; font-size:.62rem; color:var(--dim); letter-spacing:.05em; }
+  .ability-chip .ability-img{ width:56px; height:56px; border-radius:10px; background-size:cover; background-position:center; background-color:#1c1530; border:1px solid var(--edge); }
   .ability-chip .ability-name{ font-size:.84rem; color:var(--ink); font-weight:600; }
   .ability-chip .ability-level{ font-family:'JetBrains Mono', monospace; font-size:.8rem; color:var(--gold); font-weight:700; }
 
@@ -193,6 +194,9 @@
   .ability-row .ability-level{ width:130px; padding:8px 10px; border-radius:6px; border:1px solid var(--edge); background:#1c1530; color:var(--ink); font-family:'Manrope', sans-serif; font-size:.85rem; }
   .ability-row .remove-ability{ background:none; border:none; color:var(--dim); cursor:pointer; font-size:.9rem; }
   .ability-row .remove-ability:hover{ color:var(--gold); }
+  .ability-thumb-btn{ width:52px; height:52px; border-radius:9px; background-size:cover; background-position:center; background-color:#140f1f; border:1px dashed var(--edge); display:flex; align-items:center; justify-content:center; color:var(--dim); font-size:1.1rem; cursor:pointer; flex-shrink:0; }
+  .ability-thumb-btn:hover{ border-color:var(--gold); }
+  .ability-thumb-btn.has-img{ border-style:solid; }
 
   /* ===== Detalle de build (modal grande, todo más grande y legible) ===== */
   #buildDetailDialog{ width:min(1080px,96vw); max-height:94vh; }
@@ -490,12 +494,6 @@
     </div>
 
     <div class="subsection">
-      <div class="subsection-title">Habilidades y nivel objetivo <span style="color:var(--dim); text-transform:none; font-weight:400;">(el orden de la lista = prioridad, se muestran de izquierda a derecha)</span></div>
-      <div id="abilitiesContainer"></div>
-      <button type="button" class="btn btn-ghost" id="addAbilityBtn">+ agregar habilidad</button>
-    </div>
-
-    <div class="subsection">
       <div class="subsection-title">Armas <span style="color:var(--dim); text-transform:none; font-weight:400;">(la primera se muestra grande, el resto como opciones)</span></div>
       <div id="weaponsContainer"></div>
       <button type="button" class="btn btn-ghost" id="addWeaponBtn">+ agregar arma</button>
@@ -510,6 +508,12 @@
       <div class="subsection-title">Artefactos / discos / soportes</div>
       <div id="piecesContainer"></div>
       <button type="button" class="btn btn-ghost" id="addPieceBtn">+ agregar pieza</button>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-title">Habilidades y nivel objetivo <span style="color:var(--dim); text-transform:none; font-weight:400;">(el orden de la lista = prioridad, se muestran de izquierda a derecha; podés poner nombre, imagen, o ambos)</span></div>
+      <div id="abilitiesContainer"></div>
+      <button type="button" class="btn btn-ghost" id="addAbilityBtn">+ agregar habilidad</button>
     </div>
 
     <div class="subsection">
@@ -926,7 +930,7 @@ function buildWeaponHtml(u, interactive){
   const extraWeapons = weaponsList.slice(1);
   if(!mainWeapon) return '';
   const mainTip = [mainWeapon.name, mainWeapon.stats, mainWeapon.notes].filter(Boolean).join('\n');
-  const mainClickAttrs = interactive ? `${dataItemAttr({ kind:'Arma', name:mainWeapon.name, stats:mainWeapon.stats, notes:mainWeapon.notes, image:mainWeapon.image })}` : '';
+  const mainClickAttrs = interactive ? `${dataItemAttr({ kind:'Arma', name:mainWeapon.name, image:mainWeapon.image, libraryId:mainWeapon.libraryId||'' })}` : '';
   return `
     <div class="section-label">Arma</div>
     <div class="weapon-primary">
@@ -941,7 +945,7 @@ function buildWeaponHtml(u, interactive){
       <div class="weapon-extra-list">
         ${extraWeapons.map(w => {
           const tip = [w.name, w.stats, w.notes].filter(Boolean).join('\n');
-          const clickAttrs = interactive ? dataItemAttr({ kind:'Arma', name:w.name, stats:w.stats, notes:w.notes, image:w.image }) : '';
+          const clickAttrs = interactive ? dataItemAttr({ kind:'Arma', name:w.name, image:w.image, libraryId:w.libraryId||'' }) : '';
           return `
           <div class="piece-line ${interactive?'clickable-item':''}" ${interactive ? clickAttrs : ''}>
             ${w.image ? `<div class="thumb" style="background-image:url(${w.image});" ${interactive ? '' : tipAttr(tip)}></div>` : ''}
@@ -958,7 +962,7 @@ function buildWeaponHtml(u, interactive){
 function buildPiecesHtml(u, interactive){
   const piecesHtml = (u.pieces||[]).map(p => {
     const tip = [p.name, p.stats, p.notes].filter(Boolean).join('\n');
-    const clickAttrs = interactive ? dataItemAttr({ kind:'Pieza / disco', name:p.name, stats:p.stats, notes:p.notes, image:p.image }) : '';
+    const clickAttrs = interactive ? dataItemAttr({ kind:'Pieza / disco', name:p.name, image:p.image, libraryId:p.libraryId||'' }) : '';
     return `
     <div class="piece-line ${interactive?'clickable-item':''}" ${interactive ? clickAttrs : ''}>
       ${p.image ? `<div class="thumb" style="background-image:url(${p.image});" ${interactive ? '' : tipAttr(tip)}></div>` : ''}
@@ -991,7 +995,7 @@ function buildTeamsHtml(u, limit){
 }
 
 function buildAbilitiesHtml(u){
-  const abilities = (u.abilities||[]).filter(a => a.name || a.level);
+  const abilities = (u.abilities||[]).filter(a => a.name || a.level || a.image);
   if(!abilities.length) return '';
   return `
     <div class="section-label">Habilidades — prioridad de subida (izquierda a derecha)</div>
@@ -999,7 +1003,8 @@ function buildAbilitiesHtml(u){
       ${abilities.map((a,i) => `
         <div class="ability-chip">
           <div class="ability-priority-badge">#${i+1}</div>
-          <div class="ability-name">${escapeHtml(a.name||'')}</div>
+          ${a.image ? `<div class="ability-img" style="background-image:url(${a.image});"></div>` : ''}
+          ${a.name ? `<div class="ability-name">${escapeHtml(a.name)}</div>` : ''}
           ${a.level ? `<div class="ability-level">Nv. ${escapeHtml(a.level)}</div>` : ''}
         </div>
       `).join('')}
@@ -1055,14 +1060,22 @@ function renderBuilds(){
 const buildDetailDialog = document.getElementById('buildDetailDialog');
 document.getElementById('buildDetailClose').addEventListener('click', () => buildDetailDialog.close());
 
+function findLibraryItem(id){
+  if(!id) return null;
+  return libraryData.find(i => i.id === id) || null;
+}
+
 function showDetailSide(obj){
   const side = document.getElementById('detailSide');
+  const libItem = findLibraryItem(obj.libraryId);
+  const displayName = obj.name || (libItem && libItem.name) || 'Sin nombre';
+  const displayImage = obj.image || (libItem && libItem.image) || '';
+  const libStats = libItem ? (libItem.stats || '') : '';
   side.innerHTML = `
-    ${obj.image ? `<div class="side-img" style="background-image:url(${obj.image});"></div>` : ''}
+    ${displayImage ? `<div class="side-img" style="background-image:url(${displayImage});"></div>` : ''}
     <div class="side-kind">${escapeHtml(obj.kind || '')}</div>
-    <h4>${escapeHtml(obj.name || 'Sin nombre')}</h4>
-    ${obj.stats ? `<div class="side-stats">${escapeHtml(obj.stats)}</div>` : ''}
-    ${obj.notes ? `<div class="side-stats" style="margin-top:10px; color:var(--ink);">${escapeHtml(obj.notes)}</div>` : ''}
+    <h4>${escapeHtml(displayName)}</h4>
+    ${libStats ? `<div class="side-stats">${escapeHtml(libStats)}</div>` : `<div class="side-hint">No hay información adicional guardada en la biblioteca para este elemento.</div>`}
   `;
   side.classList.add('visible');
 }
@@ -1082,10 +1095,10 @@ function openBuildDetail(u){
   document.getElementById('detailBody').innerHTML = `
     ${badgeHtml(u.game, color)}
     <h2>${escapeHtml(u.name)}</h2>
-    ${buildAbilitiesHtml(u)}
     ${buildWeaponHtml(u, true)}
     ${buildTargetStatsHtml(u)}
     ${buildPiecesHtml(u, true)}
+    ${buildAbilitiesHtml(u)}
     ${buildTeamsHtml(u)}
     ${u.notes ? `<div class="notes-label">Notas generales</div><p class="notes">${escapeHtml(u.notes)}</p>` : ''}
     <div class="detail-actions admin-only" style="display:${isAdmin?'flex':'none'}">
@@ -1094,12 +1107,8 @@ function openBuildDetail(u){
     </div>
   `;
   const side = document.getElementById('detailSide');
-  side.classList.remove('visible');
-  side.innerHTML = '';
-  const weaponsList = getWeaponsList(u);
-  if(weaponsList[0]){
-    showDetailSide({ kind:'Arma', name:weaponsList[0].name, stats:weaponsList[0].stats, notes:weaponsList[0].notes, image:weaponsList[0].image });
-  }
+  side.innerHTML = `<div class="side-hint">Hacé click en el arma o en un disco para ver la información guardada en la biblioteca.</div>`;
+  side.classList.add('visible');
   const editBtn = document.getElementById('detailEditBtn');
   if(editBtn) editBtn.addEventListener('click', () => {
     buildDetailDialog.close();
@@ -1434,15 +1443,45 @@ function addAbilityRow(existing){
       <button type="button" class="ability-up" title="subir prioridad">▲</button>
       <button type="button" class="ability-down" title="bajar prioridad">▼</button>
     </div>
-    <input class="ability-name" placeholder="Nombre de la habilidad">
+    <div class="ability-thumb-btn"><span class="ability-thumb-plus">+</span></div>
+    <input type="file" class="ability-file" accept="image/*" style="display:none;">
+    <input class="ability-name" placeholder="Nombre (opcional si hay imagen)">
     <input class="ability-level" placeholder="Nivel objetivo (ej. 10)">
     <button type="button" class="remove-ability">✕</button>
   `;
   container.appendChild(row);
+
+  const thumbBtn = row.querySelector('.ability-thumb-btn');
+  const fileInput = row.querySelector('.ability-file');
+  let abilityImg = existing ? existing.image || '' : '';
+  row._abilityImage = abilityImg;
+
+  function refreshThumb(){
+    if(abilityImg){
+      thumbBtn.style.backgroundImage = `url(${abilityImg})`;
+      thumbBtn.innerHTML = '';
+      thumbBtn.classList.add('has-img');
+    } else {
+      thumbBtn.style.backgroundImage = 'none';
+      thumbBtn.innerHTML = '<span class="ability-thumb-plus">+</span>';
+      thumbBtn.classList.remove('has-img');
+    }
+  }
+  thumbBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if(!file) return;
+    abilityImg = await compressImage(file, 300, 0.7);
+    row._abilityImage = abilityImg;
+    refreshThumb();
+  });
+
   if(existing){
     row.querySelector('.ability-name').value = existing.name || '';
     row.querySelector('.ability-level').value = existing.level || '';
   }
+  refreshThumb();
+
   row.querySelector('.remove-ability').addEventListener('click', () => row.remove());
   row.querySelector('.ability-up').addEventListener('click', () => {
     const prev = row.previousElementSibling;
@@ -1489,12 +1528,14 @@ function addWeaponRow(existing){
   const fileInput = row.querySelector('.weapon-file');
   const preview = row.querySelector('.weapon-preview');
   let weaponImg = existing ? existing.image || '' : '';
+  let weaponLibraryId = existing ? existing.libraryId || '' : '';
   if(weaponImg){ preview.style.backgroundImage = `url(${weaponImg})`; preview.textContent=''; }
 
   function applyPicked(item){
     row.querySelector('.weapon-name').value = item.name || '';
     row.querySelector('.weapon-stats').value = item.stats || '';
     weaponImg = item.image || '';
+    weaponLibraryId = item.id || '';
     preview.style.backgroundImage = weaponImg ? `url(${weaponImg})` : 'none';
     preview.textContent = weaponImg ? '' : 'sin imagen';
     updatePickBtn();
@@ -1518,6 +1559,7 @@ function addWeaponRow(existing){
     if(!file) return;
     preview.textContent = 'procesando...';
     weaponImg = await compressImage(file, 600, 0.72);
+    weaponLibraryId = ''; // imagen propia, ya no está atada a la biblioteca
     preview.style.backgroundImage = `url(${weaponImg})`;
     preview.textContent = '';
     updatePickBtn();
@@ -1545,7 +1587,8 @@ function addWeaponRow(existing){
     getName: () => row.querySelector('.weapon-name').value.trim(),
     getStats: () => row.querySelector('.weapon-stats').value.trim(),
     getNotes: () => row.querySelector('.weapon-notes').value.trim(),
-    getImage: () => weaponImg
+    getImage: () => weaponImg,
+    getLibraryId: () => weaponLibraryId
   };
 }
 
@@ -1584,12 +1627,14 @@ function addPieceRow(existing){
   const fileInput = row.querySelector('.piece-file');
   const preview = row.querySelector('.piece-preview');
   let pieceData = existing ? existing.image || '' : '';
+  let pieceLibraryId = existing ? existing.libraryId || '' : '';
   if(pieceData){ preview.style.backgroundImage = `url(${pieceData})`; preview.textContent=''; }
 
   function applyPicked(item){
     row.querySelector('.piece-name').value = item.name || '';
     row.querySelector('.piece-stats').value = item.stats || '';
     pieceData = item.image || '';
+    pieceLibraryId = item.id || '';
     preview.style.backgroundImage = pieceData ? `url(${pieceData})` : 'none';
     preview.textContent = pieceData ? '' : 'sin imagen';
     updatePickBtn();
@@ -1613,6 +1658,7 @@ function addPieceRow(existing){
     if(!file) return;
     preview.textContent = 'procesando...';
     pieceData = await compressImage(file, 500, 0.7);
+    pieceLibraryId = ''; // imagen propia, ya no está atada a la biblioteca
     preview.style.backgroundImage = `url(${pieceData})`;
     preview.textContent = '';
     updatePickBtn();
@@ -1640,7 +1686,8 @@ function addPieceRow(existing){
     getName: () => row.querySelector('.piece-name').value.trim(),
     getStats: () => row.querySelector('.piece-stats').value.trim(),
     getNotes: () => row.querySelector('.piece-notes').value.trim(),
-    getImage: () => pieceData
+    getImage: () => pieceData,
+    getLibraryId: () => pieceLibraryId
   };
 }
 
@@ -1776,10 +1823,11 @@ document.getElementById('buildCancel').addEventListener('click', () => buildDial
 document.getElementById('buildSave').addEventListener('click', async () => {
   const abilities = Array.from(document.querySelectorAll('#abilitiesContainer .ability-row')).map(row => ({
     name: row.querySelector('.ability-name').value.trim(),
-    level: row.querySelector('.ability-level').value.trim()
-  })).filter(a => a.name || a.level);
-  const weapons = weaponHandlers.filter(Boolean).map(h => ({ name:h.getName(), stats:h.getStats(), notes:h.getNotes(), image:h.getImage() })).filter(w => w.name || w.image || w.stats);
-  const pieces = pieceHandlers.filter(Boolean).map(h => ({ name:h.getName(), stats:h.getStats(), notes:h.getNotes(), image:h.getImage() }));
+    level: row.querySelector('.ability-level').value.trim(),
+    image: row._abilityImage || ''
+  })).filter(a => a.name || a.level || a.image);
+  const weapons = weaponHandlers.filter(Boolean).map(h => ({ name:h.getName(), stats:h.getStats(), notes:h.getNotes(), image:h.getImage(), libraryId:h.getLibraryId() })).filter(w => w.name || w.image || w.stats);
+  const pieces = pieceHandlers.filter(Boolean).map(h => ({ name:h.getName(), stats:h.getStats(), notes:h.getNotes(), image:h.getImage(), libraryId:h.getLibraryId() }));
   const teams = teamHandlers.filter(Boolean).map(h => ({ name:h.getName(), members:h.getMembers() })).filter(t => t.name || t.members.length);
   const payload = {
     game: document.getElementById('uGame').value,
