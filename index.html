@@ -222,9 +222,10 @@
 
   /* ===== Detalle de build (modal grande, todo más grande y legible) ===== */
   #buildDetailDialog{ width:min(1080px,96vw); max-height:94vh; }
-  #buildDetailDialog .dialog-inner{ max-height:94vh; padding:0; position:relative; }
+  #buildDetailDialog .dialog-inner{ max-height:94vh; padding:0; }
   .detail-close-row{
-    position:absolute; top:14px; right:14px; z-index:15; pointer-events:none;
+    position:sticky; top:14px; height:0; overflow:visible; z-index:15;
+    display:flex; justify-content:flex-end; padding:0 14px; pointer-events:none;
   }
   .detail-close-btn{
     background:rgba(12,9,18,.7); backdrop-filter:blur(4px); border:1px solid var(--edge); color:var(--ink);
@@ -404,7 +405,7 @@
     <button class="tab active" data-panel="active">Banners activos</button>
     <button class="tab" data-panel="upcoming">Próximos banners</button>
     <button class="tab" data-panel="builds">Builds</button>
-    <button class="tab admin-only" style="display:none;" data-panel="library">Biblioteca</button>
+    <button class="tab" data-panel="library">Biblioteca</button>
   </nav>
 
   <main>
@@ -450,7 +451,7 @@
     </section>
 
     <section class="panel" id="panel-library">
-      <div class="toolbar">
+      <div class="toolbar admin-only" style="display:none;">
         <button class="btn btn-primary" data-open-lib="weapon">+ Nueva arma</button>
         <button class="btn btn-primary" data-open-lib="piece">+ Nueva pieza / disco</button>
         <button class="btn btn-primary" data-open-lib="character">+ Nuevo personaje (equipo)</button>
@@ -461,7 +462,7 @@
       <div class="lib-subtabs">
         <button class="lib-subtab active" data-libtype="weapon">Armas</button>
         <button class="lib-subtab" data-libtype="piece">Piezas / discos</button>
-        <button class="lib-subtab" data-libtype="character">Personajes</button>
+        <button class="lib-subtab admin-only" style="display:none;" data-libtype="character">Personajes</button>
       </div>
       <div class="game-filters" id="filtersLibrary"></div>
       <div class="grid" id="gridLibrary"><div class="loading">Cargando biblioteca...</div></div>
@@ -1264,7 +1265,7 @@ function renderLibrary(){
         ${badgeHtml(i.game)}
         <h3>${escapeHtml(i.name)}</h3>
         ${i.stats ? `<p class="notes">${escapeHtml(i.stats)}</p>` : ''}
-        <div class="card-actions">
+        <div class="card-actions admin-only" style="display:${isAdmin?'flex':'none'}">
           <button class="icon-btn" data-edit-lib="${i.id}">✎ Editar</button>
           <button class="icon-btn" data-del-lib="${i.id}">✕ Eliminar</button>
         </div>
