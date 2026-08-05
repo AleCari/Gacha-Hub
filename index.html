@@ -91,6 +91,27 @@
   }
   .chip.active{ border-color:var(--chip-color, var(--gold)); color:var(--chip-color, var(--gold)); }
 
+  .search-input{
+    font-family:'Manrope', sans-serif; font-size:.82rem; padding:10px 14px; border-radius:9px;
+    border:1px solid var(--edge); background:#1c1530; color:var(--ink); min-width:220px; flex:1; max-width:320px;
+  }
+  .search-input:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+  .sort-select{
+    font-family:'JetBrains Mono', monospace; font-size:.72rem; font-weight:700; text-transform:uppercase;
+    padding:9px 12px; border-radius:9px; border:1px solid var(--edge); background:#1c1530; color:var(--dim); cursor:pointer;
+  }
+  .sort-select:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+  .toggle-active{ border-color:var(--gold) !important; color:var(--gold) !important; }
+
+  .fav-star-btn{
+    position:absolute; top:10px; left:10px; z-index:5; width:34px; height:34px; border-radius:50%;
+    background:rgba(12,9,18,.65); backdrop-filter:blur(3px); border:1px solid var(--edge); color:var(--dim);
+    cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center;
+    transition:color .15s ease, border-color .15s ease, transform .15s ease;
+  }
+  .fav-star-btn:hover{ transform:scale(1.08); border-color:var(--gold); }
+  .fav-star-btn.is-fav{ color:var(--gold); border-color:var(--gold); }
+
   .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:18px; }
   #gridActive, #gridUpcoming{ grid-template-columns: 1fr; max-width: 750px; margin: 0 auto; }
   #gridBuilds{ grid-template-columns: repeat(auto-fill, minmax(460px,1fr)); gap:24px; }
@@ -175,6 +196,7 @@
   .target-stats{ font-size:.86rem; color:var(--dim); line-height:1.65; background:rgba(255,255,255,.03); border:1px solid var(--edge); border-radius:8px; padding:12px 14px; margin:10px 0 16px; }
   .target-stats .stat-line{ margin-bottom:6px; }
   .target-stats .stat-line:last-child{ margin-bottom:0; }
+  .click-hint{ font-family:'JetBrains Mono', monospace; font-size:.68rem; color:var(--gold); text-transform:uppercase; letter-spacing:.04em; margin-top:6px; opacity:.85; }
   .target-stats .stat-line b{ color:var(--ink); }
 
   /* Habilidades — orden de prioridad de izquierda a derecha */
@@ -200,10 +222,9 @@
 
   /* ===== Detalle de build (modal grande, todo más grande y legible) ===== */
   #buildDetailDialog{ width:min(1080px,96vw); max-height:94vh; }
-  #buildDetailDialog .dialog-inner{ max-height:94vh; padding:0; }
+  #buildDetailDialog .dialog-inner{ max-height:94vh; padding:0; position:relative; }
   .detail-close-row{
-    position:sticky; top:0; z-index:15; display:flex; justify-content:flex-end;
-    padding:14px 14px 0; pointer-events:none;
+    position:absolute; top:14px; right:14px; z-index:15; pointer-events:none;
   }
   .detail-close-btn{
     background:rgba(12,9,18,.7); backdrop-filter:blur(4px); border:1px solid var(--edge); color:var(--ink);
@@ -230,7 +251,7 @@
   .detail-body .target-stats{ font-size:.95rem; padding:16px 18px; }
   .detail-body .notes{ font-size:.98rem; line-height:1.7; }
   .detail-body .notes-label{ font-family:'JetBrains Mono', monospace; font-size:.85rem; text-transform:uppercase; letter-spacing:.05em; color:var(--gold); margin:20px 0 8px; }
-  .detail-actions{ display:flex; gap:8px; margin-top:24px; padding-top:18px; border-top:1px solid var(--edge); }
+  .detail-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:24px; padding-top:18px; border-top:1px solid var(--edge); }
 
   /* Panel lateral con stats de arma/pieza clickeada dentro del detalle */
   .clickable-item{ cursor:pointer; border-radius:10px; transition:outline-color .15s; outline:2px solid transparent; outline-offset:3px; }
@@ -268,7 +289,7 @@
   .empty{ grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--dim); border:1px dashed var(--edge); border-radius:16px; }
 
   dialog{ border:none; border-radius:16px; padding:0; background:var(--card); color:var(--ink); width:min(560px,92vw); max-height:88vh; }
-  dialog::backdrop{ background:rgba(10,7,18,.75); }
+  dialog::backdrop{ background:rgba(8,6,13,.94); }
   .dialog-inner{ padding:26px; overflow-y:auto; max-height:88vh; }
   #buildDialog{ width:min(880px,95vw); max-height:92vh; }
   #buildDialog .dialog-inner{ max-height:92vh; }
@@ -390,6 +411,11 @@
     <section class="panel active" id="panel-active">
       <div class="toolbar">
         <button class="btn btn-primary admin-only" style="display:none;" data-open="banner">+ Nuevo banner</button>
+        <select class="sort-select" id="sortActive">
+          <option value="default">Orden: termina antes</option>
+          <option value="name-asc">Nombre A-Z</option>
+          <option value="name-desc">Nombre Z-A</option>
+        </select>
       </div>
       <div class="game-filters" id="filtersActive"></div>
       <div class="grid" id="gridActive"><div class="loading">Cargando banners...</div></div>
@@ -398,6 +424,11 @@
     <section class="panel" id="panel-upcoming">
       <div class="toolbar">
         <button class="btn btn-primary admin-only" style="display:none;" data-open="banner">+ Nuevo banner</button>
+        <select class="sort-select" id="sortUpcoming">
+          <option value="default">Orden: empieza antes</option>
+          <option value="name-asc">Nombre A-Z</option>
+          <option value="name-desc">Nombre Z-A</option>
+        </select>
       </div>
       <div class="game-filters" id="filtersUpcoming"></div>
       <div class="grid" id="gridUpcoming"><div class="loading">Cargando...</div></div>
@@ -406,6 +437,13 @@
     <section class="panel" id="panel-builds">
       <div class="toolbar">
         <button class="btn btn-primary admin-only" style="display:none;" data-open="build">+ Nueva build</button>
+        <input type="text" class="search-input" id="searchBuilds" placeholder="🔍 Buscar por nombre...">
+        <select class="sort-select" id="sortBuilds">
+          <option value="recent">Más recientes primero</option>
+          <option value="name-asc">Nombre A-Z</option>
+          <option value="name-desc">Nombre Z-A</option>
+        </select>
+        <button class="btn btn-ghost" id="toggleFavoritesOnly">☆ Solo favoritas</button>
       </div>
       <div class="game-filters" id="filtersBuilds"></div>
       <div class="grid" id="gridBuilds"><div class="loading">Cargando builds...</div></div>
@@ -416,6 +454,9 @@
         <button class="btn btn-primary" data-open-lib="weapon">+ Nueva arma</button>
         <button class="btn btn-primary" data-open-lib="piece">+ Nueva pieza / disco</button>
         <button class="btn btn-primary" data-open-lib="character">+ Nuevo personaje (equipo)</button>
+      </div>
+      <div class="toolbar">
+        <input type="text" class="search-input" id="searchLibrary" placeholder="🔍 Buscar por nombre...">
       </div>
       <div class="lib-subtabs">
         <button class="lib-subtab active" data-libtype="weapon">Armas</button>
@@ -651,6 +692,17 @@ document.getElementById('exitAdmin').addEventListener('click', () => {
   window.location.href = url.toString();
 });
 
+// ====== COMPARTIR BUILD (?build=ID abre el detalle automáticamente) ======
+const sharedBuildId = params.get('build');
+let sharedBuildAutoOpened = false;
+
+function getShareUrl(buildId){
+  const url = new URL(window.location.href);
+  url.searchParams.delete('admin'); // nunca compartir la clave de admin en el link
+  url.searchParams.set('build', buildId);
+  return url.toString();
+}
+
 // ====== GAME CONFIG ======
 const GAMES = {
   genshin: { label: 'Genshin Impact', color: 'var(--gold)', hex:'#f2c14e', icon:'GI' },
@@ -797,6 +849,21 @@ let buildsData = [];
 let libraryData = [];
 let currentLibType = 'weapon';
 let activeGameFilter = { active: null, upcoming: null, builds: null, library: null };
+let searchQuery = { builds: '', library: '' };
+let sortOption = { active: 'default', upcoming: 'default', builds: 'recent' };
+let showOnlyFavorites = false;
+
+// ====== FAVORITOS (guardados en localStorage del navegador, no en Firestore) ======
+const FAVORITES_KEY = 'zgg_favorite_builds';
+function getFavoriteIds(){
+  try{ return JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'); }catch(e){ return []; }
+}
+function isFavorite(id){ return getFavoriteIds().includes(id); }
+function toggleFavorite(id){
+  let favs = getFavoriteIds();
+  favs = favs.includes(id) ? favs.filter(f => f !== id) : [...favs, id];
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
+}
 
 // ====== RENDER BANNERS ======
 let bannerSlideIntervals = [];
@@ -836,7 +903,10 @@ function renderGameFilters(containerId, list, key){
 
 function renderBannerGrid(gridId, filterId, list, mode){
   renderGameFilters(filterId, list, mode);
-  const filtered = activeGameFilter[mode] ? list.filter(b=>b.game===activeGameFilter[mode]) : list;
+  let filtered = activeGameFilter[mode] ? list.filter(b=>b.game===activeGameFilter[mode]) : list.slice();
+  const sortMode = sortOption[mode];
+  if(sortMode === 'name-asc') filtered.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+  else if(sortMode === 'name-desc') filtered.sort((a,b) => (b.name||'').localeCompare(a.name||''));
   const grid = document.getElementById(gridId);
   grid.innerHTML = '';
   if(filtered.length === 0){
@@ -943,7 +1013,8 @@ function buildWeaponHtml(u, interactive){
       <div class="info ${interactive?'clickable-item':''}" ${interactive ? mainClickAttrs : ''}>
         <b>${escapeHtml(mainWeapon.name||'')}</b>
         ${mainWeapon.notes ? `<div style="font-size:.8rem; color:var(--dim);">${escapeHtml(mainWeapon.notes)}</div>` : ''}
-        ${mainWeapon.stats ? `<div class="stats">${escapeHtml(mainWeapon.stats)}</div>` : ''}
+        ${(!interactive && mainWeapon.stats) ? `<div class="stats">${escapeHtml(mainWeapon.stats)}</div>` : ''}
+        ${(interactive && mainWeapon.stats) ? `<div class="click-hint">click para ver la descripción ⤢</div>` : ''}
       </div>
     </div>
     ${extraWeapons.length ? `
@@ -955,7 +1026,7 @@ function buildWeaponHtml(u, interactive){
           <div class="piece-line ${interactive?'clickable-item':''}" ${interactive ? clickAttrs : ''}>
             ${w.image ? `<div class="thumb" style="background-image:url(${w.image});" ${interactive ? '' : tipAttr(tip)}></div>` : ''}
             <div style="font-size:.8rem; color:var(--dim);">
-              <b style="color:var(--ink)">${escapeHtml(w.name||'')}</b>${w.stats ? ' — '+escapeHtml(w.stats) : ''}${w.notes ? ' — '+escapeHtml(w.notes) : ''}
+              <b style="color:var(--ink)">${escapeHtml(w.name||'')}</b>${w.notes ? ' — '+escapeHtml(w.notes) : ''}${(!interactive && w.stats) ? ' — '+escapeHtml(w.stats) : ''}
             </div>
           </div>
         `;}).join('')}
@@ -972,7 +1043,7 @@ function buildPiecesHtml(u, interactive){
     <div class="piece-line ${interactive?'clickable-item':''}" ${interactive ? clickAttrs : ''}>
       ${p.image ? `<div class="thumb" style="background-image:url(${p.image});" ${interactive ? '' : tipAttr(tip)}></div>` : ''}
       <div style="font-size:.82rem; color:var(--dim);">
-        <b style="color:var(--ink)">${escapeHtml(p.name||'')}</b>${p.stats ? ' — '+escapeHtml(p.stats) : ''}${p.notes ? ' — '+escapeHtml(p.notes) : ''}
+        <b style="color:var(--ink)">${escapeHtml(p.name||'')}</b>${p.notes ? ' — '+escapeHtml(p.notes) : ''}${(!interactive && p.stats) ? ' — '+escapeHtml(p.stats) : ''}
       </div>
     </div>
   `;}).join('');
@@ -1029,11 +1100,17 @@ function buildGeneralStatsHtml(u){
 // ====== RENDER BUILDS ======
 function renderBuilds(){
   renderGameFilters('filtersBuilds', buildsData, 'builds');
-  const filtered = activeGameFilter.builds ? buildsData.filter(u=>u.game===activeGameFilter.builds) : buildsData;
+  let filtered = activeGameFilter.builds ? buildsData.filter(u=>u.game===activeGameFilter.builds) : buildsData.slice();
+  const q = searchQuery.builds.trim().toLowerCase();
+  if(q) filtered = filtered.filter(u => (u.name||'').toLowerCase().includes(q));
+  if(showOnlyFavorites) filtered = filtered.filter(u => isFavorite(u.id));
+  if(sortOption.builds === 'name-asc') filtered.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+  else if(sortOption.builds === 'name-desc') filtered.sort((a,b) => (b.name||'').localeCompare(a.name||''));
+  else filtered.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
   const grid = document.getElementById('gridBuilds');
   grid.innerHTML = '';
   if(filtered.length === 0){
-    grid.innerHTML = '<div class="empty">Todavía no hay builds cargadas.</div>';
+    grid.innerHTML = `<div class="empty">${q || showOnlyFavorites ? 'No se encontraron builds con esos filtros.' : 'Todavía no hay builds cargadas.'}</div>`;
     return;
   }
   filtered.forEach(u => {
@@ -1042,6 +1119,7 @@ function renderBuilds(){
     card.className = 'card build-card';
     card.style.setProperty('--game-color', color);
     card.innerHTML = `
+      <button class="fav-star-btn${isFavorite(u.id)?' is-fav':''}" data-fav-build="${u.id}" title="Marcar como favorita">${isFavorite(u.id)?'★':'☆'}</button>
       <div class="card-img" style="${u.portrait ? `background-image:url(${u.portrait})` : ''}">${u.portrait?'':'sin retrato'}</div>
       <div class="card-body">
         ${badgeHtml(u.game, color)}
@@ -1059,8 +1137,13 @@ function renderBuilds(){
       </div>
     `;
     card.addEventListener('click', (e) => {
-      if(e.target.closest('.icon-btn')) return;
+      if(e.target.closest('.icon-btn') || e.target.closest('.fav-star-btn')) return;
       openBuildDetail(u);
+    });
+    card.querySelector('.fav-star-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFavorite(u.id);
+      renderBuilds();
     });
     grid.appendChild(card);
   });
@@ -1112,6 +1195,10 @@ function openBuildDetail(u){
     ${buildAbilitiesHtml(u)}
     ${buildTeamsHtml(u)}
     ${u.notes ? `<div class="notes-label">Notas generales</div><p class="notes">${escapeHtml(u.notes)}</p>` : ''}
+    <div class="detail-actions">
+      <button class="btn btn-ghost" id="detailShareBtn">🔗 Compartir</button>
+      <button class="btn btn-ghost" id="detailFavBtn">${isFavorite(u.id) ? '★ Quitar de favoritas' : '☆ Marcar como favorita'}</button>
+    </div>
     <div class="detail-actions admin-only" style="display:${isAdmin?'flex':'none'}">
       <button class="btn btn-ghost" id="detailEditBtn">✎ Editar esta build</button>
       <button class="btn btn-ghost" id="detailDelBtn">✕ Eliminar</button>
@@ -1120,6 +1207,23 @@ function openBuildDetail(u){
   const side = document.getElementById('detailSide');
   side.innerHTML = `<div class="side-hint">Hacé click en el arma o en un disco para ver la información guardada en la biblioteca.</div>`;
   side.classList.add('visible');
+  const shareBtn = document.getElementById('detailShareBtn');
+  if(shareBtn) shareBtn.addEventListener('click', async () => {
+    const shareUrl = getShareUrl(u.id);
+    try{
+      await navigator.clipboard.writeText(shareUrl);
+      shareBtn.textContent = '✔ Link copiado';
+      setTimeout(() => { shareBtn.textContent = '🔗 Compartir'; }, 2000);
+    }catch(err){
+      prompt('Copiá este link para compartir la build:', shareUrl);
+    }
+  });
+  const favBtn = document.getElementById('detailFavBtn');
+  if(favBtn) favBtn.addEventListener('click', () => {
+    toggleFavorite(u.id);
+    favBtn.textContent = isFavorite(u.id) ? '★ Quitar de favoritas' : '☆ Marcar como favorita';
+    renderBuilds();
+  });
   const editBtn = document.getElementById('detailEditBtn');
   if(editBtn) editBtn.addEventListener('click', () => {
     buildDetailDialog.close();
@@ -1141,10 +1245,12 @@ function renderLibrary(){
   if(!gridEl) return;
   const itemsOfType = libraryData.filter(i => i.type === currentLibType);
   renderGameFilters('filtersLibrary', itemsOfType, 'library');
-  const filtered = activeGameFilter.library ? itemsOfType.filter(i => i.game === activeGameFilter.library) : itemsOfType;
+  let filtered = activeGameFilter.library ? itemsOfType.filter(i => i.game === activeGameFilter.library) : itemsOfType;
+  const q = searchQuery.library.trim().toLowerCase();
+  if(q) filtered = filtered.filter(i => (i.name||'').toLowerCase().includes(q));
   gridEl.innerHTML = '';
   if(filtered.length === 0){
-    gridEl.innerHTML = '<div class="empty">No hay elementos guardados todavía.</div>';
+    gridEl.innerHTML = `<div class="empty">${q ? 'No se encontraron elementos con ese nombre.' : 'No hay elementos guardados todavía.'}</div>`;
     return;
   }
   filtered.forEach(i => {
@@ -1178,6 +1284,34 @@ document.querySelectorAll('.lib-subtab').forEach(btn => {
   });
 });
 
+// ====== BUSCADOR / ORDEN / FAVORITOS ======
+document.getElementById('searchBuilds').addEventListener('input', (e) => {
+  searchQuery.builds = e.target.value;
+  renderBuilds();
+});
+document.getElementById('searchLibrary').addEventListener('input', (e) => {
+  searchQuery.library = e.target.value;
+  renderLibrary();
+});
+document.getElementById('sortActive').addEventListener('change', (e) => {
+  sortOption.active = e.target.value;
+  renderBanners();
+});
+document.getElementById('sortUpcoming').addEventListener('change', (e) => {
+  sortOption.upcoming = e.target.value;
+  renderBanners();
+});
+document.getElementById('sortBuilds').addEventListener('change', (e) => {
+  sortOption.builds = e.target.value;
+  renderBuilds();
+});
+document.getElementById('toggleFavoritesOnly').addEventListener('click', (e) => {
+  showOnlyFavorites = !showOnlyFavorites;
+  e.target.textContent = showOnlyFavorites ? '★ Solo favoritas' : '☆ Solo favoritas';
+  e.target.classList.toggle('toggle-active', showOnlyFavorites);
+  renderBuilds();
+});
+
 // ====== FIRESTORE LISTENERS ======
 db.collection('banners').onSnapshot(snap => {
   bannersData = snap.docs.map(d => ({ id:d.id, ...d.data() }));
@@ -1187,6 +1321,14 @@ db.collection('banners').onSnapshot(snap => {
 db.collection('builds').onSnapshot(snap => {
   buildsData = snap.docs.map(d => ({ id:d.id, ...d.data() }));
   renderBuilds();
+  if(sharedBuildId && !sharedBuildAutoOpened){
+    const shared = buildsData.find(u => u.id === sharedBuildId);
+    if(shared){
+      sharedBuildAutoOpened = true;
+      document.querySelector('[data-panel="builds"]')?.click();
+      openBuildDetail(shared);
+    }
+  }
 }, err => console.error(err));
 
 db.collection('library').onSnapshot(snap => {
@@ -1857,8 +1999,9 @@ document.getElementById('buildSave').addEventListener('click', async () => {
   try{
     if(editingBuildId){
       // limpia el campo viejo "team" (formato anterior) si existía, ya migramos a "teams"
-      await db.collection('builds').doc(editingBuildId).update({ ...payload, team: firebase.firestore.FieldValue.delete() });
+      await db.collection('builds').doc(editingBuildId).update({ ...payload, updatedAt: Date.now(), team: firebase.firestore.FieldValue.delete() });
     } else {
+      payload.createdAt = Date.now();
       await db.collection('builds').add(payload);
     }
     buildDialog.close();
